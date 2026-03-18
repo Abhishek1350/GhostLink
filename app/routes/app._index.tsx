@@ -1,340 +1,210 @@
-import { useEffect } from "react";
-import type {
-  ActionFunctionArgs,
-  HeadersFunction,
-  LoaderFunctionArgs,
-} from "react-router";
-import { useFetcher } from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs, HeadersFunction } from "react-router";
+import { useLoaderData, useFetcher, data } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { authenticate } from "../shopify.server";
+import { useEffect, useState } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import shopify from "../shopify.server";
+import dbStatic from "../db.server";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = dbStatic as any;
+
+interface GhostLinkLog {
+  id: number;
+  shop: string;
+  url: string;
+  referrer: string | null;
+  hitCount: number;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface GhostLinkSettings {
+  autoPilot: boolean;
+  autoTarget: string;
+}
+
+interface LoaderData {
+  logs: GhostLinkLog[];
+  settings: GhostLinkSettings;
+}
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session } = await shopify.authenticate.admin(request);
+  const shop = session.shop;
 
-  return null;
+  const logs: GhostLinkLog[] = await db.ghostLinkLog.findMany({
+    where: { shop },
+    orderBy: { hitCount: 'desc' },
+  });
+
+  const settings: GhostLinkSettings = await db.ghostLinkSettings.findUnique({ where: { shop } }) || {
+    autoPilot: false,
+    autoTarget: "/"
+  };
+
+  return { logs, settings };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($product: ProductCreateInput!) {
-        productCreate(product: $product) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-            demoInfo: metafield(namespace: "$app", key: "demo_info") {
-              jsonValue
-            }
-          }
+  const { admin, session } = await shopify.authenticate.admin(request);
+  const shop = session.shop;
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "fix") {
+    const logId = Number(formData.get("logId"));
+    const targetPath = formData.get("targetPath") as string;
+    
+    const log = await db.ghostLinkLog.findUnique({ where: { id: logId } });
+    if (!log) return data({ error: "Log not found" }, { status: 404 });
+
+    const response = await admin.graphql(
+      `#graphql
+      mutation urlRedirectCreate($urlRedirect: UrlRedirectInput!) {
+        urlRedirectCreate(urlRedirect: $urlRedirect) {
+          userErrors { message }
         }
       }`,
-    {
-      variables: {
-        product: {
-          title: `${color} Snowboard`,
-          metafields: [
-            {
-              namespace: "$app",
-              key: "demo_info",
-              value: "Created by React Router Template",
-            },
-          ],
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
+      { variables: { urlRedirect: { path: log.url, target: targetPath } } }
+    );
 
-  const product = responseJson.data!.productCreate!.product!;
-  const variantId = product.variants.edges[0]!.node!.id!;
+    const resJson: any = await response.json();
+    if (resJson.data.urlRedirectCreate.userErrors.length > 0) {
+      return data({ error: resJson.data.urlRedirectCreate.userErrors[0].message }, { status: 400 });
+    }
 
-  const variantResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyReactRouterTemplateUpdateVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-        productVariants {
-          id
-          price
-          barcode
-          createdAt
-        }
-      }
-    }`,
-    {
-      variables: {
-        productId: product.id,
-        variants: [{ id: variantId, price: "100.00" }],
-      },
-    },
-  );
+    await db.ghostLinkLog.update({ where: { id: logId }, data: { status: "fixed" } });
+    return { success: true };
+  }
 
-  const variantResponseJson = await variantResponse.json();
+  if (intent === "saveSettings") {
+    const autoPilot = formData.get("autoPilot") === "true";
+    const autoTarget = formData.get("autoTarget") as string;
 
-  const metaobjectResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyReactRouterTemplateUpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: MetaobjectUpsertInput!) {
-      metaobjectUpsert(handle: $handle, metaobject: $metaobject) {
-        metaobject {
-          id
-          handle
-          title: field(key: "title") {
-            jsonValue
-          }
-          description: field(key: "description") {
-            jsonValue
-          }
-        }
-        userErrors {
-          field
-          message
-        }
-      }
-    }`,
-    {
-      variables: {
-        handle: {
-          type: "$app:example",
-          handle: "demo-entry",
-        },
-        metaobject: {
-          fields: [
-            { key: "title", value: "Demo Entry" },
-            {
-              key: "description",
-              value:
-                "This metaobject was created by the Shopify app template to demonstrate the metaobject API.",
-            },
-          ],
-        },
-      },
-    },
-  );
+    await db.ghostLinkSettings.upsert({
+      where: { shop },
+      update: { autoPilot, autoTarget },
+      create: { shop, autoPilot, autoTarget }
+    });
+    return { success: true };
+  }
 
-  const metaobjectResponseJson = await metaobjectResponse.json();
-
-  return {
-    product: responseJson!.data!.productCreate!.product,
-    variant:
-      variantResponseJson!.data!.productVariantsBulkUpdate!.productVariants,
-    metaobject:
-      metaobjectResponseJson!.data!.metaobjectUpsert!.metaobject,
-  };
+  return data({ error: "Invalid action" }, { status: 400 });
 };
 
 export default function Index() {
-  const fetcher = useFetcher<typeof action>();
-
-  const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
+  const { logs, settings } = useLoaderData<LoaderData>();
+  const fetcher = useFetcher<{ success?: boolean; error?: string }>();
+  const shopifyBridge = useAppBridge();
+  
+  const [targetPaths, setTargetPaths] = useState<Record<number, string>>({});
+  const [autoPilot, setAutoPilot] = useState(settings.autoPilot);
+  const [autoTarget, setAutoTarget] = useState(settings.autoTarget);
 
   useEffect(() => {
-    if (fetcher.data?.product?.id) {
-      shopify.toast.show("Product created");
+    if (fetcher.data?.success) {
+      shopifyBridge.toast.show("Saved successfully");
+    } else if (fetcher.data?.error) {
+      shopifyBridge.toast.show(fetcher.data.error, { isError: true });
     }
-  }, [fetcher.data?.product?.id, shopify]);
+  }, [fetcher.data, shopifyBridge]);
 
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
+  const handleFix = (logId: number) => {
+    fetcher.submit({ intent: "fix", logId: logId.toString(), targetPath: targetPaths[logId] || "/" }, { method: "POST" });
+  };
+
+  const handleSaveSettings = () => {
+    fetcher.submit({ intent: "saveSettings", autoPilot: autoPilot.toString(), autoTarget }, { method: "POST" });
+  };
+
+  const pendingLogs = logs.filter((l) => l.status === "pending");
 
   return (
-    <s-page heading="Shopify app template">
-      <s-button slot="primary-action" onClick={generateProduct}>
-        Generate a product
-      </s-button>
-
-      <s-section heading="Congrats on creating a new Shopify app 🎉">
-        <s-paragraph>
-          This embedded app template uses{" "}
-          <s-link
-            href="https://shopify.dev/docs/apps/tools/app-bridge"
-            target="_blank"
-          >
-            App Bridge
-          </s-link>{" "}
-          interface examples like an{" "}
-          <s-link href="/app/additional">additional page in the app nav</s-link>
-          , as well as an{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            Admin GraphQL
-          </s-link>{" "}
-          mutation demo, to provide a starting point for app development.
-        </s-paragraph>
-      </s-section>
-      <s-section heading="Get started with products">
-        <s-paragraph>
-          Generate a product with GraphQL and get the JSON output for that
-          product. Learn more about the{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-            target="_blank"
-          >
-            productCreate
-          </s-link>{" "}
-          mutation in our API references. Includes a product{" "}
-          <s-link
-            href="https://shopify.dev/docs/apps/build/custom-data/metafields"
-            target="_blank"
-          >
-            metafield
-          </s-link>{" "}
-          and{" "}
-          <s-link
-            href="https://shopify.dev/docs/apps/build/custom-data/metaobjects"
-            target="_blank"
-          >
-            metaobject
-          </s-link>
-          .
-        </s-paragraph>
-        <s-stack direction="inline" gap="base">
-          <s-button
-            onClick={generateProduct}
-            {...(isLoading ? { loading: true } : {})}
-          >
-            Generate a product
+    <s-page heading="GhostLink Dashboard">
+      <ui-title-bar title="GhostLink Dashboard" />
+      
+      <s-section heading="Settings">
+        <s-stack direction="block" gap="base">
+          <s-checkbox 
+            label="Enable Auto-Pilot (Automatically fix new 404s)"
+            checked={autoPilot}
+            onChange={(e: any) => setAutoPilot(e.target.checked)}
+          ></s-checkbox>
+          
+          <s-text-field 
+            label="Auto-Pilot Target Path" 
+            value={autoTarget} 
+            onChange={(e: any) => setAutoTarget(e.target.value)}
+          ></s-text-field>
+          
+          <s-button onClick={handleSaveSettings}>
+            Save Configuration
           </s-button>
-          {fetcher.data?.product && (
-            <s-button
-              onClick={() => {
-                shopify.intents.invoke?.("edit:shopify/Product", {
-                  value: fetcher.data?.product?.id,
-                });
-              }}
-              target="_blank"
-              variant="tertiary"
-            >
-              Edit product
-            </s-button>
-          )}
         </s-stack>
-        {fetcher.data?.product && (
-          <s-section heading="productCreate mutation">
-            <s-stack direction="block" gap="base">
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.product, null, 2)}</code>
-                </pre>
-              </s-box>
+      </s-section>
 
-              <s-heading>productVariantsBulkUpdate mutation</s-heading>
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.variant, null, 2)}</code>
-                </pre>
-              </s-box>
+      <s-section heading="Detected Broken Links">
+        <s-paragraph>
+          These URLs resulted in 404 errors for your customers. Create redirects to recover lost traffic.
+        </s-paragraph>
 
-              <s-heading>metaobjectUpsert mutation</s-heading>
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>
-                    {JSON.stringify(fetcher.data.metaobject, null, 2)}
-                  </code>
-                </pre>
-              </s-box>
-            </s-stack>
-          </s-section>
+        {pendingLogs.length === 0 ? (
+          <s-box padding="base" background="subdued" borderRadius="base">
+            <s-text>Everything looks ghost-free! No new 404s detected.</s-text>
+          </s-box>
+        ) : (
+          <s-box paddingBlockStart="base">
+            <s-table variant="list">
+              <s-table-header-row>
+                <s-table-header listSlot="primary">Hits</s-table-header>
+                <s-table-header listSlot="secondary">Path</s-table-header>
+                <s-table-header listSlot="inline">Action</s-table-header>
+              </s-table-header-row>
+              <s-table-body>
+                {pendingLogs.map((log: any) => (
+                  <s-table-row key={log.id}>
+                    <s-table-cell>
+                      <s-badge tone="caution">{log.hitCount}</s-badge>
+                    </s-table-cell>
+                    
+                    <s-table-cell>
+                      <s-stack direction="block" gap="small">
+                        <s-text type="strong">{log.url}</s-text>
+                        {log.referrer && (
+                          <s-text color="subdued">Referrer: {log.referrer}</s-text>
+                        )}
+                      </s-stack>
+                    </s-table-cell>
+
+                    <s-table-cell>
+                      <s-stack direction="inline" gap="small" alignItems="center">
+                        <s-text-field
+                          placeholder="Redirect target (e.g. /)"
+                          value={targetPaths[log.id] || ""}
+                          onChange={(e: any) => setTargetPaths({ ...targetPaths, [log.id]: e.target.value })}
+                        ></s-text-field>
+                        <s-button variant="primary" onClick={() => handleFix(log.id)}>Repair</s-button>
+                      </s-stack>
+                    </s-table-cell>
+                  </s-table-row>
+                ))}
+              </s-table-body>
+            </s-table>
+          </s-box>
         )}
       </s-section>
 
-      <s-section slot="aside" heading="App template specs">
-        <s-paragraph>
-          <s-text>Framework: </s-text>
-          <s-link href="https://reactrouter.com/" target="_blank">
-            React Router
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Interface: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/app-home/using-polaris-components"
-            target="_blank"
-          >
-            Polaris web components
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>API: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            GraphQL
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Custom data: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/apps/build/custom-data"
-            target="_blank"
-          >
-            Metafields &amp; metaobjects
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Database: </s-text>
-          <s-link href="https://www.prisma.io/" target="_blank">
-            Prisma
-          </s-link>
-        </s-paragraph>
-      </s-section>
-
-      <s-section slot="aside" heading="Next steps">
-        <s-unordered-list>
-          <s-list-item>
-            Build an{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/getting-started/build-app-example"
-              target="_blank"
-            >
-              example app
-            </s-link>
-          </s-list-item>
-          <s-list-item>
-            Explore Shopify&apos;s API with{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-              target="_blank"
-            >
-              GraphiQL
-            </s-link>
-          </s-list-item>
-        </s-unordered-list>
+      <s-section slot="aside" heading="Analytics">
+        <s-stack direction="block" gap="base">
+          <s-box padding="base" borderWidth="base" borderRadius="base">
+            <s-heading>Recoverable Hits</s-heading>
+            <s-text type="strong">
+              {pendingLogs.reduce((acc, log) => acc + log.hitCount, 0)}
+            </s-text>
+          </s-box>
+        </s-stack>
       </s-section>
     </s-page>
   );
