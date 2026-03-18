@@ -1,50 +1,37 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, HeadersFunction } from "react-router";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  HeadersFunction,
+} from "react-router";
 import { useLoaderData, useFetcher, data } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { useEffect, useState } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import shopify from "../shopify.server";
-import dbStatic from "../db.server";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = dbStatic as any;
-
-interface GhostLinkLog {
-  id: number;
-  shop: string;
-  url: string;
-  referrer: string | null;
-  hitCount: number;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface GhostLinkSettings {
-  autoPilot: boolean;
-  autoTarget: string;
-}
-
-interface LoaderData {
-  logs: GhostLinkLog[];
-  settings: GhostLinkSettings;
-}
+import shopify from "~/shopify.server";
+import db from "~/db.server";
+import { useRouteLoaderData } from "react-router";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await shopify.authenticate.admin(request);
   const shop = session.shop;
 
-  const logs: GhostLinkLog[] = await db.ghostLinkLog.findMany({
+  const logs = await db.ghostLinkLog.findMany({
     where: { shop },
-    orderBy: { hitCount: 'desc' },
+    orderBy: { hitCount: "desc" },
   });
 
-  const settings: GhostLinkSettings = await db.ghostLinkSettings.findUnique({ where: { shop } }) || {
+  const settings = (await db.ghostLinkSettings.findUnique({
+    where: { shop },
+  })) || {
     autoPilot: false,
-    autoTarget: "/"
+    autoRedirectToHome: false,
+    autoTarget: "/",
   };
 
-  return { logs, settings };
+  return {
+    logs,
+    settings,
+  };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -56,7 +43,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (intent === "fix") {
     const logId = Number(formData.get("logId"));
     const targetPath = formData.get("targetPath") as string;
-    
+
     const log = await db.ghostLinkLog.findUnique({ where: { id: logId } });
     if (!log) return data({ error: "Log not found" }, { status: 404 });
 
@@ -67,26 +54,33 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           userErrors { message }
         }
       }`,
-      { variables: { urlRedirect: { path: log.url, target: targetPath } } }
+      { variables: { urlRedirect: { path: log.url, target: targetPath } } },
     );
 
-    const resJson: any = await response.json();
+    const resJson = await response.json();
     if (resJson.data.urlRedirectCreate.userErrors.length > 0) {
-      return data({ error: resJson.data.urlRedirectCreate.userErrors[0].message }, { status: 400 });
+      return data(
+        { error: resJson.data.urlRedirectCreate.userErrors[0].message },
+        { status: 400 },
+      );
     }
 
-    await db.ghostLinkLog.update({ where: { id: logId }, data: { status: "fixed" } });
+    await db.ghostLinkLog.update({
+      where: { id: logId },
+      data: { status: "fixed" },
+    });
     return { success: true };
   }
 
   if (intent === "saveSettings") {
     const autoPilot = formData.get("autoPilot") === "true";
+    const autoRedirectToHome = formData.get("autoRedirectToHome") === "true";
     const autoTarget = formData.get("autoTarget") as string;
 
     await db.ghostLinkSettings.upsert({
       where: { shop },
-      update: { autoPilot, autoTarget },
-      create: { shop, autoPilot, autoTarget }
+      update: { autoPilot, autoRedirectToHome, autoTarget },
+      create: { shop, autoPilot, autoRedirectToHome, autoTarget },
     });
     return { success: true };
   }
@@ -95,13 +89,47 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-  const { logs, settings } = useLoaderData<LoaderData>();
+  const { logs, settings } = useLoaderData<typeof loader>();
+  const parentData = useRouteLoaderData("routes/app") as {
+    apiKey: string;
+    shop: string;
+  };
+  const { apiKey } = parentData || { apiKey: "" };
+
   const fetcher = useFetcher<{ success?: boolean; error?: string }>();
   const shopifyBridge = useAppBridge();
-  
+
   const [targetPaths, setTargetPaths] = useState<Record<number, string>>({});
   const [autoPilot, setAutoPilot] = useState(settings.autoPilot);
+  const [autoRedirectToHome, setAutoRedirectToHome] = useState(
+    settings.autoRedirectToHome,
+  );
   const [autoTarget, setAutoTarget] = useState(settings.autoTarget);
+  const [isExtensionActive, setIsExtensionActive] = useState<boolean | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const checkExtension = async () => {
+      try {
+        const extensions: any = await shopifyBridge.app.extensions();
+        console.log(extensions)
+        setIsExtensionActive(false);
+        const scout = extensions.find(
+          (ext: any) => ext.handle === "ghost-link-scout",
+        );
+        if (scout) {
+          setIsExtensionActive(
+            scout.status === "active" ||
+            (scout.activations && scout.activations.length > 0),
+          );
+        }
+      } catch (e) {
+        console.error("Failed to check extension status", e);
+      }
+    };
+    checkExtension();
+  }, [shopifyBridge]);
 
   useEffect(() => {
     if (fetcher.data?.success) {
@@ -112,11 +140,34 @@ export default function Index() {
   }, [fetcher.data, shopifyBridge]);
 
   const handleFix = (logId: number) => {
-    fetcher.submit({ intent: "fix", logId: logId.toString(), targetPath: targetPaths[logId] || "/" }, { method: "POST" });
+    fetcher.submit(
+      {
+        intent: "fix",
+        logId: logId.toString(),
+        targetPath: targetPaths[logId] || "/",
+      },
+      { method: "POST" },
+    );
   };
 
   const handleSaveSettings = () => {
-    fetcher.submit({ intent: "saveSettings", autoPilot: autoPilot.toString(), autoTarget }, { method: "POST" });
+    fetcher.submit(
+      {
+        intent: "saveSettings",
+        autoPilot: autoPilot.toString(),
+        autoRedirectToHome: autoRedirectToHome.toString(),
+        autoTarget,
+      },
+      { method: "POST" },
+    );
+  };
+
+  const handleEnableThemeEditor = () => {
+    const deepLink =
+      `shopify://admin/themes/current/editor` +
+      `?context=apps&activateAppId=${apiKey}/scout`;
+
+    open(deepLink, "_top");
   };
 
   const pendingLogs = logs.filter((l) => l.status === "pending");
@@ -124,22 +175,65 @@ export default function Index() {
   return (
     <s-page heading="GhostLink Dashboard">
       <ui-title-bar title="GhostLink Dashboard" />
-      
+
+      <s-section heading="App Extension Status">
+        <s-box padding="base" borderWidth="base" borderRadius="base">
+          <s-stack
+            direction="inline"
+            gap="base"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <s-stack direction="inline" gap="small" alignItems="center">
+              {isExtensionActive === null ? (
+                <s-text color="subdued">Checking status...</s-text>
+              ) : isExtensionActive ? (
+                <>
+                  <s-badge tone="success">Scout Active</s-badge>
+                  <s-text>GhostLink is monitoring your store for 404s.</s-text>
+                </>
+              ) : (
+                <>
+                  <s-badge tone="critical">Scout Not Found</s-badge>
+                  <s-text>
+                    Enable the App Embed to start tracking broken links.
+                  </s-text>
+                </>
+              )}
+            </s-stack>
+
+            <s-button variant="primary" onClick={handleEnableThemeEditor}>
+              Enable in Theme Editor
+            </s-button>
+          </s-stack>
+        </s-box>
+      </s-section>
+
       <s-section heading="Settings">
         <s-stack direction="block" gap="base">
-          <s-checkbox 
+          <s-checkbox
             label="Enable Auto-Pilot (Automatically fix new 404s)"
             checked={autoPilot}
             onChange={(e: any) => setAutoPilot(e.target.checked)}
           ></s-checkbox>
-          
-          <s-text-field 
-            label="Auto-Pilot Target Path" 
-            value={autoTarget} 
+
+          <s-checkbox
+            label="Auto-Redirect to Homepage (If no target specified)"
+            disabled={!autoPilot}
+            checked={autoRedirectToHome}
+            onChange={(e: any) => setAutoRedirectToHome(e.target.checked)}
+          ></s-checkbox>
+
+          <s-text-field
+            label="Default Auto-Pilot Target Path"
+            value={autoTarget}
             onChange={(e: any) => setAutoTarget(e.target.value)}
           ></s-text-field>
-          
-          <s-button onClick={handleSaveSettings}>
+
+          <s-button
+            onClick={handleSaveSettings}
+            loading={fetcher.state !== "idle"}
+          >
             Save Configuration
           </s-button>
         </s-stack>
@@ -147,7 +241,8 @@ export default function Index() {
 
       <s-section heading="Detected Broken Links">
         <s-paragraph>
-          These URLs resulted in 404 errors for your customers. Create redirects to recover lost traffic.
+          These URLs resulted in 404 errors for your customers. Create redirects
+          to recover lost traffic.
         </s-paragraph>
 
         {pendingLogs.length === 0 ? (
@@ -168,24 +263,40 @@ export default function Index() {
                     <s-table-cell>
                       <s-badge tone="caution">{log.hitCount}</s-badge>
                     </s-table-cell>
-                    
+
                     <s-table-cell>
                       <s-stack direction="block" gap="small">
                         <s-text type="strong">{log.url}</s-text>
                         {log.referrer && (
-                          <s-text color="subdued">Referrer: {log.referrer}</s-text>
+                          <s-text color="subdued">
+                            Referrer: {log.referrer}
+                          </s-text>
                         )}
                       </s-stack>
                     </s-table-cell>
 
                     <s-table-cell>
-                      <s-stack direction="inline" gap="small" alignItems="center">
+                      <s-stack
+                        direction="inline"
+                        gap="small"
+                        alignItems="center"
+                      >
                         <s-text-field
                           placeholder="Redirect target (e.g. /)"
                           value={targetPaths[log.id] || ""}
-                          onChange={(e: any) => setTargetPaths({ ...targetPaths, [log.id]: e.target.value })}
+                          onChange={(e: any) =>
+                            setTargetPaths({
+                              ...targetPaths,
+                              [log.id]: e.target.value,
+                            })
+                          }
                         ></s-text-field>
-                        <s-button variant="primary" onClick={() => handleFix(log.id)}>Repair</s-button>
+                        <s-button
+                          variant="primary"
+                          onClick={() => handleFix(log.id)}
+                        >
+                          Repair
+                        </s-button>
                       </s-stack>
                     </s-table-cell>
                   </s-table-row>

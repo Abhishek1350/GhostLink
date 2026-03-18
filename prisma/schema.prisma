@@ -47,8 +47,9 @@ model GhostLinkLog {
 }
 
 model GhostLinkSettings {
-  shop        String   @id
-  autoPilot   Boolean  @default(false)
-  autoTarget  String   @default("/") // Default redirect target for auto-pilot
-  updatedAt   DateTime @updatedAt
+  shop               String   @id
+  autoPilot          Boolean  @default(false)
+  autoRedirectToHome Boolean  @default(false) // If true, redirect to homepage if no specific target
+  autoTarget         String   @default("/") // Default redirect target for auto-pilot
+  updatedAt          DateTime @updatedAt
 }

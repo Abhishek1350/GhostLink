@@ -1,3 +1,14 @@
+{%- comment -%}
+  GhostLink Scout app embed.
+  Injects a small root div with data about the current page.
+  The JS in assets/scout.js reads this and logs 404 pages via an app proxy.
+{%- endcomment -%}
+
+<div
+  id="ghostlink-scout-root"
+  data-page-type="{{ request.page_type }}"
+></div>
+
 {% schema %}
 {
   "name": "GhostLink Scout",
