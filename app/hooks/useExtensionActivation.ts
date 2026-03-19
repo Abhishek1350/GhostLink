@@ -36,10 +36,10 @@ function isThemeExtensionActive(
         });
 }
 
-type Status = "loading" | "error" | "active" | "inactive";
+export type ExtStatus = "loading" | "error" | "active" | "inactive";
 
 export function useExtensionActivation() {
-    const [status, setStatus] = useState<Status>("loading");
+    const [status, setStatus] = useState<ExtStatus>("loading");
     const appBridge = useAppBridge();
 
     useEffect(() => {

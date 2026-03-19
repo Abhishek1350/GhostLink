@@ -13,43 +13,48 @@ datasource db {
   url      = "file:dev.sqlite"
 }
 
+enum LinkStatus {
+  PENDING
+  FIXED
+}
+
 model Session {
-  id            String    @id
-  shop          String
-  state         String
-  isOnline      Boolean   @default(false)
-  scope         String?
-  expires       DateTime?
-  accessToken   String
-  userId        BigInt?
-  firstName     String?
-  lastName      String?
-  email         String?
-  accountOwner  Boolean   @default(false)
-  locale        String?
-  collaborator  Boolean?  @default(false)
-  emailVerified Boolean?  @default(false)
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
 
 model GhostLinkLog {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   shop      String
   path      String
   url       String
   referrer  String?
-  hitCount  Int       @default(0)
-  status    String    @default("pending")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  hitCount  Int        @default(0)
+  status    LinkStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@unique([shop, path], name: "shop_path")
 }
 
 model GhostLinkSettings {
-  shop               String   @id
-  autoPilot          Boolean  @default(false)
-  autoTarget         String   @default("/") 
-  updatedAt          DateTime @updatedAt
+  shop       String   @id
+  autoPilot  Boolean  @default(false)
+  autoTarget String   @default("/")
+  updatedAt  DateTime @updatedAt
 }

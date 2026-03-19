@@ -3,6 +3,7 @@ import { data } from "react-router";
 import { authenticate, unauthenticated } from "~/shopify.server";
 import db from "~/db.server";
 import { GraphqlQueryError } from "@shopify/shopify-api";
+import { LinkStatus } from "@prisma/client";
 
 const trackingParams = new Set([
   "_pos",
@@ -100,7 +101,7 @@ export async function action({ request }: ActionFunctionArgs) {
       url: fullUrl,
       referrer: referrer || null,
       hitCount: 1,
-      status: "pending",
+      status: LinkStatus.PENDING,
     },
   });
 
@@ -130,10 +131,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const resJson = await response.json();
 
       const userErrors = resJson?.data?.urlRedirectCreate?.userErrors ?? [];
-      if (userErrors.length === 0 && log.status === "pending") {
+      if (userErrors.length === 0 && log.status === LinkStatus.PENDING) {
         await db.ghostLinkLog.update({
           where: { id: log.id },
-          data: { status: "fixed" },
+          data: { status: LinkStatus.FIXED },
         });
         console.log(
           `GhostLink: Auto-Pilot fixed ${pathKey} -> ${settings.autoTarget}`,
