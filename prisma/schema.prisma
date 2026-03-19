@@ -36,20 +36,20 @@ model Session {
 model GhostLinkLog {
   id        Int      @id @default(autoincrement())
   shop      String
-  url       String   // The broken URL path (e.g., /products/old-slug)
-  referrer  String?  // Where the user came from
-  hitCount  Int      @default(1)
-  status    String   @default("pending") // pending, fixed, ignored
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  path      String
+  url       String
+  referrer  String?
+  hitCount  Int       @default(0)
+  status    String    @default("pending")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  @@unique([shop, url]) // Ensure one record per broken URL per shop
+  @@unique([shop, path], name: "shop_path")
 }
 
 model GhostLinkSettings {
   shop               String   @id
   autoPilot          Boolean  @default(false)
-  autoRedirectToHome Boolean  @default(false) // If true, redirect to homepage if no specific target
-  autoTarget         String   @default("/") // Default redirect target for auto-pilot
+  autoTarget         String   @default("/") 
   updatedAt          DateTime @updatedAt
 }
