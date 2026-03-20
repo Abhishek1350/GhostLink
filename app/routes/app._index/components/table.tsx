@@ -18,11 +18,9 @@ export function Table({ logs, ...props }: Props) {
                         <s-paragraph >
                             Looks clean! It seems you’ve installed it now. Please give us some time to identify any broken links. In the meantime, you can enable the settings to autopilot—it will automatically handle redirects for you. Alternatively, you can manually add redirects to specific pages by clicking the button below to configure them.
                         </s-paragraph>
-                        <s-link href="/app/redirects">
-                            <s-button variant="auto">
-                                Configure Redirects
-                            </s-button>
-                        </s-link>
+                        <s-button href="/app/redirects" variant="auto">
+                            Configure Redirects
+                        </s-button>
                     </s-stack>
                 </s-box>
             ) : (
