@@ -1,6 +1,7 @@
 import { AdminApiContext } from "@shopify/shopify-app-react-router/server";
 import {
     GET_URL_REDIRECTS,
+    GET_URL_REDIRECT,
     CREATE_REDIRECT,
     UPDATE_REDIRECT,
     DELETE_REDIRECT,
@@ -9,20 +10,49 @@ import {
 } from "./gql.server";
 import {
     UrlRedirectQuery,
+    GetUrlRedirectQueryVariables,
     UrlRedirectCreateMutationVariables,
     UrlRedirectUpdateMutationVariables,
     UrlRedirectDeleteMutationVariables,
     UrlRedirectBulkDeleteByIdsMutationVariables,
 } from "~/types/admin.generated";
 
-export async function getUrlRedirects(admin: AdminApiContext) {
+type PaginationParams = {
+    first?: number;
+    last?: number;
+    after?: string;
+    before?: string;
+};
+
+export async function getUrlRedirects(
+    admin: AdminApiContext,
+    params: PaginationParams = { first: 15 },
+) {
     try {
-        const response = await admin.graphql(GET_URL_REDIRECTS);
+        const response = await admin.graphql(GET_URL_REDIRECTS, {
+            variables: params,
+        });
         if (!response.ok) throw new Error(response.statusText);
 
         const { data } = await response.json();
 
         return data?.urlRedirects;
+    } catch (error) {
+        return null;
+    }
+}
+
+export async function getUrlRedirect(
+    admin: AdminApiContext,
+    id: string,
+) {
+    try {
+        const variables: GetUrlRedirectQueryVariables = { id };
+        const response = await admin.graphql(GET_URL_REDIRECT, { variables });
+        if (!response.ok) throw new Error(response.statusText);
+
+        const { data } = await response.json();
+        return data?.urlRedirect;
     } catch (error) {
         return null;
     }

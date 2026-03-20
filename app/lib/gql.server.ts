@@ -1,6 +1,6 @@
 export const GET_URL_REDIRECTS = `#graphql
-        query UrlRedirect {
-            urlRedirects(first: 15) {
+        query UrlRedirect($first: Int, $last: Int, $after: String, $before: String) {
+            urlRedirects(first: $first, last: $last, after: $after, before: $before) {
                 nodes {
                     id
                     path
@@ -9,10 +9,22 @@ export const GET_URL_REDIRECTS = `#graphql
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
+                    startCursor
+                    endCursor
                 }
             }
         }
     `;
+
+export const GET_URL_REDIRECT = `#graphql
+    query GetUrlRedirect($id: ID!) {
+        urlRedirect(id: $id) {
+            id
+            path
+            target
+        }
+    }
+`;
 
 export const CREATE_REDIRECT = `#graphql
         mutation urlRedirectCreate($urlRedirect: UrlRedirectInput!) {
