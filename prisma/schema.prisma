@@ -58,3 +58,34 @@ model GhostLinkSettings {
   autoTarget String   @default("/")
   updatedAt  DateTime @updatedAt
 }
+
+// ==========================Analytics===========================
+enum InstallationEventType {
+  INSTALLED
+  UNINSTALLED
+}
+
+model Shop {
+  shop               String   @id
+  installCount       Int      @default(0)
+  uninstallCount     Int      @default(0)
+  isInstalled        Boolean  @default(false)
+  firstInstalledAt   DateTime?
+  lastInstalledAt    DateTime?
+  lastUninstalledAt  DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  installEvents      ShopInstallEvent[]
+}
+
+model ShopInstallEvent {
+  id        Int                   @id @default(autoincrement())
+  shop      String
+  type      InstallationEventType
+  createdAt DateTime              @default(now())
+
+  shopRecord Shop? @relation(fields: [shop], references: [shop])
+
+  @@index([shop, createdAt])
+}
