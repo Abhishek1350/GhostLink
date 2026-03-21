@@ -1,11 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { useLoaderData, data } from "react-router";
+import { useLoaderData, data, useOutletContext } from "react-router";
 import { Fragment } from "react";
 import shopify from "~/shopify.server";
-import { useExtensionActivation } from "~/hooks/useExtensionActivation";
 import { ExtensionStatus, Settings, Table } from "./components";
 import { getLogs } from "~/lib/link-logs.server";
 import { getSettings, saveSettings } from "~/lib/settings.server";
+import { AppOutletContext } from "~/routes/app";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session } = await shopify.authenticate.admin(request);
@@ -41,7 +41,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Index() {
     const { logs, settings } = useLoaderData<typeof loader>();
 
-    const extensionStatus = useExtensionActivation();
+    const { extensionStatus } = useOutletContext<AppOutletContext>();
 
     return (
         <s-page heading="GhostLink Dashboard">

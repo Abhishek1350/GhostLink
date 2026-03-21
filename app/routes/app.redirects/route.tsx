@@ -1,16 +1,12 @@
-import { useAppBridge } from "@shopify/app-bridge-react";
-import { useCallback, useEffect, useState } from "react";
 import {
     ActionFunctionArgs,
     data,
     LoaderFunctionArgs,
-    useFetcher,
     useLoaderData,
     useNavigate,
     useSearchParams,
 } from "react-router";
 import {
-    bulkDeleteRedirectsByIds,
     deleteRedirect,
     getUrlRedirects,
 } from "~/lib/url-redirect.server";
