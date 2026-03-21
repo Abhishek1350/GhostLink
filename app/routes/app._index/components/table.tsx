@@ -64,7 +64,7 @@ export function Table({ logs, hasFilters, ...props }: Props) {
                             onChange={(e) => handleFilters("type", e.currentTarget.value)}
                             disabled={loading}
                         >
-                            {["PENDING", "FIXED"].map((filter) => (
+                            {["ALL", "PENDING", "FIXED"].map((filter) => (
                                 <s-option value={filter} key={filter}>
                                     {filter}
                                 </s-option>

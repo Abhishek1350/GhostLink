@@ -75,7 +75,7 @@ export default function Index() {
                         <s-paragraph>
                             Broken links can tank your SEO and hurt your conversion rates.
                         </s-paragraph>
-                        {!hasFilters && logs?.data.length === 0 ? (
+                        {!hasFilters && logs?.data?.length === 0 ? (
                             <s-box padding="base" background="subdued" borderRadius="base">
                                 <s-stack direction="block" gap="small">
                                     <s-paragraph>

@@ -3,7 +3,7 @@ import db from "~/db.server";
 import { ITEMS_PER_PAGE } from "./constants";
 
 type GetLogSPrams = {
-    type?: LinkStatus;
+    type?: LinkStatus | "ALL";
     page?: number;
 };
 
@@ -16,7 +16,7 @@ export async function getLogs(shop: Session["shop"], params?: GetLogSPrams) {
 
         const where: Prisma.GhostLinkLogWhereInput = { shop };
 
-        if (params?.type) {
+        if (params?.type && params.type !== "ALL") {
             where.status = params.type;
         }
     
@@ -45,7 +45,13 @@ export async function getLogs(shop: Session["shop"], params?: GetLogSPrams) {
             page,
         };
     } catch (error) {
-        return null;
+        return {
+            data: [],
+            hasNextPage: false,
+            hasPreviousPage: false,
+            total: 0,
+            page: 1,
+        };
     }
 }
 
