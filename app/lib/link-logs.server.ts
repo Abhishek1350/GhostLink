@@ -19,9 +19,7 @@ export async function getLogs(shop: Session["shop"], params?: GetLogSPrams) {
         if (params?.type) {
             where.status = params.type;
         }
-        
-        console.log(where)
-
+    
         let orderBy: Prisma.GhostLinkLogOrderByWithRelationInput = {
             createdAt: "desc",
         };

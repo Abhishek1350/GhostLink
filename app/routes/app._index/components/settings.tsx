@@ -35,9 +35,6 @@ export function Settings({ settings, ...props }: Props) {
 
     return (
         <s-section {...props}>
-            <s-paragraph>
-                Configure GhostLink to automatically fix new 404s
-            </s-paragraph>
             <s-stack direction="block" gap="base">
                 <s-checkbox
                     label="Auto-Pilot"

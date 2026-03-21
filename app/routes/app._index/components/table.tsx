@@ -1,5 +1,9 @@
 import { useNavigate, useNavigation, useSearchParams } from "react-router";
 import { LogsResult } from "~/lib/link-logs.server";
+import { FIX_MODAL, FixModal } from "./fix-modal";
+import { Fragment } from "react/jsx-runtime";
+import { GhostLinkLog } from "@prisma/client";
+import { useState } from "react";
 
 type Props = JSX.IntrinsicElements["s-box"] & {
     logs: LogsResult;
@@ -12,6 +16,10 @@ export function Table({ logs, hasFilters, ...props }: Props) {
     const [searchParams] = useSearchParams();
 
     const loading = useNavigation().state === "loading";
+
+    const [selectedForFix, setSelectedForFix] = useState<GhostLinkLog | null>(
+        null,
+    );
 
     function handleNextPage() {
         if (logs?.hasNextPage && logs.page) {
@@ -66,40 +74,63 @@ export function Table({ logs, hasFilters, ...props }: Props) {
                 </s-stack>
             ) : null}
             {logs && logs.data.length > 0 ? (
-                <s-table
-                    loading={loading}
-                    paginate
-                    hasNextPage={logs!.hasNextPage || undefined}
-                    hasPreviousPage={logs!.hasPreviousPage || undefined}
-                    onNextPage={handleNextPage}
-                    onPreviousPage={handlePreviousPage}
-                >
-                    <s-table-header-row>
-                        <s-table-header listSlot="primary">Hits</s-table-header>
-                        <s-table-header listSlot="secondary">Path</s-table-header>
-                        <s-table-header listSlot="secondary">Status</s-table-header>
-                    </s-table-header-row>
-                    <s-table-body>
-                        {logs.data.map((log) => (
-                            <s-table-row key={log.id}>
-                                <s-table-cell>
-                                    <s-badge tone="neutral">{log.hitCount}</s-badge>
-                                </s-table-cell>
+                <Fragment>
+                    <s-table
+                        loading={loading}
+                        paginate
+                        hasNextPage={logs!.hasNextPage || undefined}
+                        hasPreviousPage={logs!.hasPreviousPage || undefined}
+                        onNextPage={handleNextPage}
+                        onPreviousPage={handlePreviousPage}
+                    >
+                        <s-table-header-row>
+                            <s-table-header listSlot="primary">Hits</s-table-header>
+                            <s-table-header listSlot="secondary">Path</s-table-header>
+                            <s-table-header listSlot="secondary">Status</s-table-header>
+                            <s-table-header listSlot="secondary">Action</s-table-header>
+                        </s-table-header-row>
+                        <s-table-body>
+                            {logs.data.map((log) => (
+                                <s-table-row key={log.id}>
+                                    <s-table-cell>
+                                        <s-badge tone="neutral">{log.hitCount}</s-badge>
+                                    </s-table-cell>
 
-                                <s-table-cell>
-                                    <s-text type="strong">{log.path}</s-text>
-                                </s-table-cell>
-                                <s-table-cell>
-                                    <s-badge
-                                        tone={log.status === "FIXED" ? "success" : "critical"}
-                                    >
-                                        {log.status}
-                                    </s-badge>
-                                </s-table-cell>
-                            </s-table-row>
-                        ))}
-                    </s-table-body>
-                </s-table>
+                                    <s-table-cell>
+                                        <s-text type="strong">{log.path}</s-text>
+                                    </s-table-cell>
+                                    <s-table-cell>
+                                        <s-badge
+                                            tone={log.status === "FIXED" ? "success" : "critical"}
+                                        >
+                                            {log.status}
+                                        </s-badge>
+                                    </s-table-cell>
+
+                                    <s-table-cell>
+                                        {log.status === "FIXED" ? (
+                                            <s-text>NA</s-text>
+                                        ) : (
+                                            <s-button
+                                                variant="auto"
+                                                icon="shield-check-mark"
+                                                command="--show"
+                                                commandFor={FIX_MODAL}
+                                                onClick={() => setSelectedForFix(log)}
+                                            >
+                                                Fix
+                                            </s-button>
+                                        )}
+                                    </s-table-cell>
+                                </s-table-row>
+                            ))}
+                        </s-table-body>
+                    </s-table>
+                    <FixModal
+                        link={selectedForFix}
+                        onClose={() => setSelectedForFix(null)}
+                    />
+                </Fragment>
             ) : (
                 hasFilters && <s-text>No logs found.</s-text>
             )}
