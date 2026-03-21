@@ -1,9 +1,18 @@
 import type { ActionFunctionArgs } from "react-router";
 import { data } from "react-router";
-import { authenticate, unauthenticated } from "~/shopify.server";
-import db from "~/db.server";
+import { authenticate } from "~/shopify.server";
 import { GraphqlQueryError } from "@shopify/shopify-api";
-import { LinkStatus } from "@prisma/client";
+import { GhostLinkLog, LinkStatus, Session } from "@prisma/client";
+import { logHit, updateLogStatus } from "~/lib/link-logs.server";
+import { createRedirect } from "~/lib/url-redirect.server";
+import { getSettings } from "~/lib/settings.server";
+import { AdminApiContext } from "@shopify/shopify-app-react-router/server";
+
+type ProxyBody = {
+  url: string;
+  referrer?: string;
+  timestamp?: string;
+};
 
 const trackingParams = new Set([
   "_pos",
@@ -44,114 +53,112 @@ function normalizeUrlForRedirect(rawUrl: string) {
   return { pathKey, fullUrl };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const { session } = await authenticate.public.appProxy(request);
+async function getShopAndAdminFromAppProxy(request: Request) {
+  const { session, admin } = await authenticate.public.appProxy(request);
 
   if (!session || !session.shop) {
-    return data({ message: "Unauthorized" }, { status: 401 });
+    throw data({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const { shop } = session;
+  if (!admin) {
+    throw data({ message: "No admin context for this shop" }, { status: 403 });
+  }
 
-  let body: { url?: string; referrer?: string; timestamp?: string } | null =
-    null;
+  return { shop: session.shop, admin };
+}
 
+async function parseJsonBody(request: Request): Promise<ProxyBody | null> {
   try {
     const text = await request.text();
-    body = JSON.parse(text);
-  } catch (e) {
-    return data({ message: "Invalid JSON" }, { status: 400 });
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function validateBody(body: ProxyBody | null) {
+  if (!body) {
+    return Response.json({ message: "Invalid JSON" }, { status: 400 });
   }
 
-  if (!body || typeof body.url !== "string") {
-    return data({ message: "URL required" }, { status: 400 });
+  if (!body.url || typeof body.url !== "string") {
+    return Response.json({ message: "URL required" }, { status: 400 });
   }
 
-  const { url, referrer, timestamp } = body;
+  return { ...body };
+}
 
-  if (!url) return data({ message: "URL required" }, { status: 400 });
-
+async function handle404Logging(
+  shop: Session["shop"],
+  url: string,
+  referrer?: string,
+) {
   const { pathKey, fullUrl } = normalizeUrlForRedirect(url);
 
-  console.log("GhostLink: 404 hit", {
-    shop,
-    pathKey,
-    fullUrl,
-    referrer: referrer ?? null,
-    timestamp: timestamp ?? null,
-  });
+  const log = await logHit(shop, { pathKey, fullUrl, referrer });
 
-  // 1. Log the hit
-  const log = await db.ghostLinkLog.upsert({
-    where: {
-      shop_path: {
-        shop,
-        path: pathKey,
-      },
-    },
-    update: {
-      hitCount: { increment: 1 },
-      url: fullUrl,
-      referrer: referrer || null,
-      updatedAt: new Date(),
-    },
-    create: {
-      shop,
+  return { log, pathKey, fullUrl };
+}
+
+async function handleAutoPilotFix({
+  admin,
+  pathKey,
+  log,
+  autoTarget,
+}: {
+  admin: AdminApiContext;
+  pathKey: GhostLinkLog["path"];
+  log: GhostLinkLog | null;
+  autoTarget?: string | null;
+}) {
+  try {
+    const createStatus = await createRedirect(admin, {
       path: pathKey,
-      url: fullUrl,
-      referrer: referrer || null,
-      hitCount: 1,
-      status: LinkStatus.PENDING,
-    },
-  });
+      target: autoTarget || "/",
+    });
 
-  const settings = await db.ghostLinkSettings.findUnique({ where: { shop } });
+    if (createStatus?.success && log?.status === LinkStatus.PENDING) {
+      await updateLogStatus(log.id, LinkStatus.FIXED);
+      console.log(
+        `GhostLink: Auto-Pilot fixed ${pathKey} -> ${autoTarget ?? "/"}`,
+      );
+    }
+  } catch (error) {
+    if (error instanceof GraphqlQueryError) {
+      console.error(
+        "GhostLink: Admin GraphQL error details:",
+        error.body?.errors,
+      );
+    } else {
+      console.error("GhostLink: Unexpected Admin API error:", error);
+    }
+  }
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const { shop, admin } = await getShopAndAdminFromAppProxy(request);
+
+  const body = await parseJsonBody(request);
+  const validated = validateBody(body);
+  if (validated instanceof Response) return validated;
+
+  const { url, referrer } = validated;
+
+  const { log, pathKey } = await handle404Logging(
+    shop,
+    url,
+    referrer,
+  );
+
+  const settings = await getSettings(shop);
 
   if (settings?.autoPilot) {
-    const { admin } = await unauthenticated.admin(shop);
-    try {
-      const response = await admin.graphql(
-        `#graphql
-      mutation urlRedirectCreate($urlRedirect: UrlRedirectInput!) {
-        urlRedirectCreate(urlRedirect: $urlRedirect) {
-          urlRedirect { id }
-          userErrors { message }
-        }
-      }`,
-        {
-          variables: {
-            urlRedirect: {
-              path: pathKey,
-              target: settings.autoTarget || "/",
-            },
-          },
-        },
-      );
-
-      const resJson = await response.json();
-
-      const userErrors = resJson?.data?.urlRedirectCreate?.userErrors ?? [];
-      if (userErrors.length === 0 && log.status === LinkStatus.PENDING) {
-        await db.ghostLinkLog.update({
-          where: { id: log.id },
-          data: { status: LinkStatus.FIXED },
-        });
-        console.log(
-          `GhostLink: Auto-Pilot fixed ${pathKey} -> ${settings.autoTarget}`,
-        );
-      } else {
-        console.warn("GhostLink: urlRedirectCreate userErrors", userErrors);
-      }
-    } catch (error) {
-      if (error instanceof GraphqlQueryError) {
-        console.error(
-          "GhostLink: Admin GraphQL error details:",
-          error.body?.errors,
-        );
-      } else {
-        console.error("GhostLink: Unexpected Admin API error:", error);
-      }
-    }
+    await handleAutoPilotFix({
+      admin,
+      pathKey,
+      log,
+      autoTarget: settings.autoTarget,
+    });
   }
 
   return data({ success: true }, { status: 200 });
