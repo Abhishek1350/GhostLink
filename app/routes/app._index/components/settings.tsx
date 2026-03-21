@@ -11,16 +11,16 @@ export function Settings({ settings, ...props }: Props) {
     const [autoPilot, setAutoPilot] = useState(settings?.autoPilot || false);
     const [autoTarget, setAutoTarget] = useState(settings?.autoTarget || "/");
 
-    const fetcher = useFetcher<{ success?: boolean; error?: string }>();
-    const shopifyBridge = useAppBridge();
+    const fetcher = useFetcher();
+    const appBridge = useAppBridge();
 
     useEffect(() => {
         if (fetcher.data?.success) {
-            shopifyBridge.toast.show("Saved successfully");
+            appBridge.toast.show("Saved successfully");
         } else if (fetcher.data?.error) {
-            shopifyBridge.toast.show(fetcher.data.error, { isError: true });
+            appBridge.toast.show(fetcher.data.error, { isError: true });
         }
-    }, [fetcher.data, shopifyBridge]);
+    }, [fetcher.data, appBridge]);
 
     function handleSaveSettings() {
         fetcher.submit(
