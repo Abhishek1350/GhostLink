@@ -108,7 +108,7 @@ export default function CreateOrEditRedirect() {
                             label="Path"
                             name="path"
                             value={path}
-                            onChange={(e: any) => setPath(e.target.value)}
+                            onChange={(e) => setPath(e.currentTarget.value)}
                             required
                             details="The old path you want to redirect (e.g., /old-page)"
                         />
@@ -117,7 +117,7 @@ export default function CreateOrEditRedirect() {
                             label="Target"
                             name="target"
                             value={target}
-                            onChange={(e: any) => setTarget(e.target.value)}
+                            onChange={(e) => setTarget(e.currentTarget.value)}
                             required
                             details="The new destination URL or path (e.g., /pages/new-page)"
                         />

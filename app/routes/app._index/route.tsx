@@ -6,12 +6,17 @@ import { ExtensionStatus, Settings, Table } from "./components";
 import { getLogs } from "~/lib/link-logs.server";
 import { getSettings, saveSettings } from "~/lib/settings.server";
 import { AppOutletContext } from "~/routes/app";
+import { LinkStatus } from "@prisma/client";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session } = await shopify.authenticate.admin(request);
     const shop = session.shop;
 
-    const logsPromise = getLogs(shop);
+    const url = new URL(request.url);
+    const type = url.searchParams.get("type") as LinkStatus;
+    const page = url.searchParams.get("page");
+
+    const logsPromise = getLogs(shop, { type, page: Number(page) });
     const settingsPromise = getSettings(shop);
 
     const [logs, settings] = await Promise.all([logsPromise, settingsPromise]);

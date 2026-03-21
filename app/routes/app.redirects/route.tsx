@@ -13,8 +13,7 @@ import {
 import { authenticate } from "~/shopify.server";
 import { RedirectTable } from "./components";
 import { UrlRedirect } from "~/types/admin.types";
-
-const PAGE_SIZE = 15;
+import { ITEMS_PER_PAGE } from "~/lib/constants";
 
 export async function loader({ request }: LoaderFunctionArgs) {
     const { admin } = await authenticate.admin(request);
@@ -23,8 +22,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const before = url.searchParams.get("before") || undefined;
 
     const paginationParams = before
-        ? { last: PAGE_SIZE, before }
-        : { first: PAGE_SIZE, after };
+        ? { last: ITEMS_PER_PAGE, before }
+        : { first: ITEMS_PER_PAGE, after };
 
     return getUrlRedirects(admin, paginationParams);
 }
@@ -96,7 +95,7 @@ export default function Redirects() {
                     make changes.
                 </s-paragraph>
 
-                <s-box paddingBlockStart="base">
+                <s-box paddingBlockStart="small">
                     {!redirects || nodes.length === 0 ? (
                         <s-paragraph>No redirects found.</s-paragraph>
                     ) : (

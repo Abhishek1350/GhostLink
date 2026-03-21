@@ -1,14 +1,53 @@
-import { GhostLinkLog, LinkStatus, Session } from "@prisma/client";
+import { GhostLinkLog, LinkStatus, Prisma, Session } from "@prisma/client";
 import db from "~/db.server";
+import { ITEMS_PER_PAGE } from "./constants";
 
-export async function getLogs(shop: Session["shop"]) {
+type GetLogSPrams = {
+    type?: LinkStatus;
+    page?: number;
+};
+
+export type LogsResult = Awaited<ReturnType<typeof getLogs>>;
+
+export async function getLogs(shop: Session["shop"], params?: GetLogSPrams) {
     try {
-        return await db.ghostLinkLog.findMany({
-            where: { shop },
-            orderBy: { hitCount: "desc" },
-        });
+        const page = params?.page && params.page > 0 ? params.page : 1;
+        const skip = (page - 1) * ITEMS_PER_PAGE;
+
+        const where: Prisma.GhostLinkLogWhereInput = { shop };
+
+        if (params?.type) {
+            where.status = params.type;
+        }
+        
+        console.log(where)
+
+        let orderBy: Prisma.GhostLinkLogOrderByWithRelationInput = {
+            createdAt: "desc",
+        };
+
+        const [data, total] = await Promise.all([
+            db.ghostLinkLog.findMany({
+                where,
+                orderBy,
+                skip,
+                take: ITEMS_PER_PAGE,
+            }),
+            db.ghostLinkLog.count({ where }),
+        ]);
+
+        const hasNextPage = skip + data.length < total;
+        const hasPreviousPage = page > 1;
+
+        return {
+            data,
+            hasNextPage,
+            hasPreviousPage,
+            total,
+            page,
+        };
     } catch (error) {
-        return [];
+        return null;
     }
 }
 

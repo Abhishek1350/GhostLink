@@ -15,6 +15,7 @@ import {
     UrlRedirectDeleteMutationVariables,
     UrlRedirectBulkDeleteByIdsMutationVariables,
 } from "~/types/admin.generated";
+import { ITEMS_PER_PAGE } from "./constants";
 
 type PaginationParams = {
     first?: number;
@@ -25,7 +26,7 @@ type PaginationParams = {
 
 export async function getUrlRedirects(
     admin: AdminApiContext,
-    params: PaginationParams = { first: 15 },
+    params: PaginationParams = { first: ITEMS_PER_PAGE },
 ) {
     try {
         const response = await admin.graphql(GET_URL_REDIRECTS, {
