@@ -44,12 +44,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             return await deleteRedirect(admin, { id });
         }
 
-        case "bulk-delete": {
-            const idsRaw = formData.get("ids") as string;
-            const ids = JSON.parse(idsRaw) as string[];
-            return await bulkDeleteRedirectsByIds(admin, { ids });
-        }
-
         default:
             return data(
                 { success: false, error: "Invalid action" },
@@ -63,57 +57,12 @@ export default function Redirects() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    const bulkDeleteFetcher = useFetcher<typeof action>();
-    const appBridge = useAppBridge();
-
-    const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
     const nodes: UrlRedirect[] = redirects?.nodes ?? [];
     const pageInfo = redirects?.pageInfo ?? {
         hasNextPage: false,
         hasPreviousPage: false,
     };
 
-    // Clear selection on data reload
-    useEffect(() => {
-        setSelectedIds([]);
-    }, [redirects]);
-
-    // Toast for bulk delete
-    useEffect(() => {
-        if (bulkDeleteFetcher.data?.success) {
-            appBridge.toast.show("Deleted selected redirects");
-        } else if (bulkDeleteFetcher.data?.error) {
-            appBridge.toast.show(bulkDeleteFetcher.data.error, {
-                isError: true,
-            });
-        }
-    }, [bulkDeleteFetcher.data, appBridge]);
-
-    // Toast for create/edit success via redirect URL parameters
-    useEffect(() => {
-        const successParam = searchParams.get("success");
-        if (successParam === "created") {
-            appBridge.toast.show("Redirect created");
-            removeSuccessParam();
-        } else if (successParam === "updated") {
-            appBridge.toast.show("Redirect updated");
-            removeSuccessParam();
-        }
-    }, [searchParams, appBridge]);
-
-    function removeSuccessParam() {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete("success");
-        window.history.replaceState({}, document.title, newUrl.toString());
-    }
-
-    function handleBulkDelete() {
-        bulkDeleteFetcher.submit(
-            { intent: "bulk-delete", ids: JSON.stringify(selectedIds) },
-            { method: "POST" },
-        );
-    }
 
     function handleNextPage() {
         if (pageInfo.endCursor) {
@@ -133,9 +82,6 @@ export default function Redirects() {
         }
     }
 
-    const handleEdit = useCallback((redirect: UrlRedirect) => {
-        navigate(`/app/redirects/create?id=${encodeURIComponent(redirect.id)}`);
-    }, [navigate]);
 
     return (
         <s-page heading="Redirects">
@@ -154,23 +100,6 @@ export default function Redirects() {
                     make changes.
                 </s-paragraph>
 
-                {selectedIds.length ? (
-                    <s-box>
-                        <s-stack direction="inline" gap="small">
-                            <s-button
-                                variant="auto"
-                                tone="critical"
-                                onClick={handleBulkDelete}
-                                loading={
-                                    bulkDeleteFetcher.state !== "idle" ? true : undefined
-                                }
-                            >
-                                Delete Selected ({selectedIds.length})
-                            </s-button>
-                        </s-stack>
-                    </s-box>
-                ) : null}
-
                 <s-box paddingBlockStart="base">
                     {!redirects || nodes.length === 0 ? (
                         <s-paragraph>No redirects found.</s-paragraph>
@@ -178,9 +107,6 @@ export default function Redirects() {
                         <RedirectTable
                             redirects={nodes}
                             pageInfo={pageInfo}
-                            selectedIds={selectedIds}
-                            onSelectionChange={setSelectedIds}
-                            onEdit={handleEdit}
                             onNextPage={handleNextPage}
                             onPreviousPage={handlePreviousPage}
                         />

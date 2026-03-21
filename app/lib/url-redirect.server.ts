@@ -9,7 +9,6 @@ import {
     BULK_DELETE_ALL_REDIRECTS,
 } from "./gql.server";
 import {
-    UrlRedirectQuery,
     GetUrlRedirectQueryVariables,
     UrlRedirectCreateMutationVariables,
     UrlRedirectUpdateMutationVariables,
