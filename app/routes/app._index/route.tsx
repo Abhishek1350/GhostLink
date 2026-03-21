@@ -24,6 +24,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return {
         logs,
         settings,
+        hasFilters: !!type || !!page,
     };
 };
 
@@ -44,7 +45,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-    const { logs, settings } = useLoaderData<typeof loader>();
+    const { logs, settings, hasFilters } = useLoaderData<typeof loader>();
 
     const { extensionStatus } = useOutletContext<AppOutletContext>();
 
@@ -53,7 +54,24 @@ export default function Index() {
             <ui-title-bar title="GhostLink Dashboard" />
             {extensionStatus === "active" ? (
                 <Fragment>
-                    <Table heading="Detected Broken Links" logs={logs} />
+                    <s-section heading="Detected Broken Links">
+                        <s-paragraph>
+                            Broken links can tank your SEO and hurt your conversion rates.
+                        </s-paragraph>
+                        {!hasFilters && logs?.data.length === 0 ? (
+                            <s-box padding="base" background="subdued" borderRadius="base">
+                                <s-stack direction="block" gap="small">
+                                    <s-paragraph>
+                                        No broken links detected yet. Please give us some time to
+                                        scan your site. In the meantime, you can enable autopilot
+                                        and let us do the work!
+                                    </s-paragraph>
+                                </s-stack>
+                            </s-box>
+                        ) : null}
+                        <Table logs={logs} hasFilters={hasFilters} />
+                    </s-section>
+
                     <Settings heading="Settings" slot="aside" settings={settings} />
                 </Fragment>
             ) : (

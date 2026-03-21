@@ -98,10 +98,6 @@ export default function CreateOrEditRedirect() {
     return (
         <s-page heading={isEditing ? "Edit Redirect" : "Create Redirect"}>
             <s-section heading={isEditing ? "Edit Redirect" : "Create Redirect"}>
-                <s-paragraph>
-                    These URLs resulted in 404 errors for your customers. Create redirects
-                    to recover lost traffic.
-                </s-paragraph>
                 <s-box padding="base">
                     <s-stack direction="block" gap="base">
                         <s-text-field
