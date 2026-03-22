@@ -4,11 +4,11 @@ export default function Contact() {
   return (
     <section id="contact" className={styles.section} aria-labelledby="contact-title">
       <div className={styles.inner}>
-        <span className={styles.sectionLabel} data-aos="fade-up">Contact</span>
-        <h2 id="contact-title" className={styles.title} data-aos="fade-up" data-aos-delay="100">
+        <span className="section-label" data-aos="fade-up">Contact</span>
+        <h2 id="contact-title" className="section-title" data-aos="fade-up" data-aos-delay="100">
           Get in touch
         </h2>
-        <p className={styles.subtitle} data-aos="fade-up" data-aos-delay="150">
+        <p className={`section-subtitle ${styles.subtitle}`} data-aos="fade-up" data-aos-delay="150">
           Have questions, feedback, or need help getting set up? Drop us a
           message and we'll get back to you as soon as we can.
         </p>
@@ -33,7 +33,7 @@ export default function Contact() {
                 id="contact-name"
                 name="name"
                 type="text"
-                className={styles.input}
+                className="input-field"
                 placeholder="Your name"
                 required
                 autoComplete="name"
@@ -47,7 +47,7 @@ export default function Contact() {
                 id="contact-email"
                 name="email"
                 type="email"
-                className={styles.input}
+                className="input-field"
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
@@ -62,13 +62,13 @@ export default function Contact() {
             <textarea
               id="contact-message"
               name="message"
-              className={styles.textarea}
+              className={`input-field ${styles.textarea}`}
               placeholder="How can we help?"
               required
             />
           </div>
 
-          <button type="submit" className={styles.submitBtn}>
+          <button type="submit" className={`btn-primary ${styles.submitBtn}`}>
             Send message
           </button>
         </form>

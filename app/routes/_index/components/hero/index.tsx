@@ -23,7 +23,7 @@ export default function Hero() {
     <header className={styles.hero}>
       <div className={styles.heroGlow} aria-hidden="true" />
       <div className={styles.inner}>
-        <span className={styles.badge} data-aos="fade-down" data-aos-delay="100">
+        <span className="section-label" data-aos="fade-down" data-aos-delay="100">
           Free Shopify App
         </span>
 
@@ -42,13 +42,13 @@ export default function Hero() {
         <div className={styles.actions} data-aos="fade-up" data-aos-delay="350">
           <a
             href="https://apps.shopify.com/ghostlink"
-            className={styles.primaryBtn}
+            className={`btn-primary ${styles.primaryBtn}`}
             target="_blank"
             rel="noopener noreferrer"
           >
             Install on Shopify
           </a>
-          <a href="#how-it-works" className={styles.secondaryBtn}>
+          <a href="#how-it-works" className={`btn-secondary ${styles.secondaryBtn}`}>
             See how it works
           </a>
         </div>

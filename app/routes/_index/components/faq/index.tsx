@@ -48,8 +48,8 @@ export default function FAQ() {
   return (
     <section id="faq" className={styles.section} aria-labelledby="faq-title">
       <div className={styles.inner}>
-        <span className={styles.sectionLabel} data-aos="fade-up">FAQ</span>
-        <h2 id="faq-title" className={styles.title} data-aos="fade-up" data-aos-delay="100">
+        <span className="section-label" data-aos="fade-up">FAQ</span>
+        <h2 id="faq-title" className={`section-title ${styles.title}`} data-aos="fade-up" data-aos-delay="100">
           Frequently asked questions
         </h2>
 
