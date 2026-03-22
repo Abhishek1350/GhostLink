@@ -18,21 +18,18 @@
 
     const pageType = root.dataset.pageType;
 
-    // Only log on real 404 pages
     if (pageType !== "404") {
       return;
     }
 
     // Don't log when the merchant is in the theme editor / preview
     if (window.Shopify && window.Shopify.designMode) {
-      console.log("GhostLink Scout: 404 detected in designMode; not logging.");
       return;
     }
 
     const url = window.location.href;
     const referrer = document.referrer || null;
 
-    // Must match the app proxy configuration in your app setup
     const proxyUrl = "/apps/ghost-link/log-404";
 
     const payload = {
@@ -43,7 +40,6 @@
 
     const json = JSON.stringify(payload);
 
-    console.log("GhostLink Scout: 404 detected. Logging to proxy...", url);
 
     const sendWithFetch = () => {
       return fetch(proxyUrl, {

@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { useLoaderData, data, useOutletContext } from "react-router";
 import { Fragment } from "react";
 import shopify from "~/shopify.server";
-import { ExtensionStatus, Settings, Table } from "./components";
+import { ExtensionStatus, InfoAndLinks, Settings, Table } from "./components";
 import { getLogs, updateLogStatus } from "~/lib/link-logs.server";
 import { getSettings, saveSettings } from "~/lib/settings.server";
 import { AppOutletContext } from "~/routes/app";
@@ -85,6 +85,7 @@ export default function Index() {
                     </s-section>
 
                     <Settings heading="Settings" slot="aside" settings={settings} />
+                    <InfoAndLinks heading="Info & links" slot="aside" />
                 </Fragment>
             ) : (
                 <ExtensionStatus heading="Extension Status" status={extensionStatus} />
