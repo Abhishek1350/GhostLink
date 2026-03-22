@@ -62,12 +62,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
 
   if (url.searchParams.get("shop")) {
-    throw redirect(`/app?${url.searchParams.toString()}`);
+    throw redirect(`/app?${url.searchParams.toString()}`, {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
   }
 
-  return null;
-
-  
+  return new Response(null, {
+    headers: {
+      "Cache-Control":
+        "public, max-age=600, s-maxage=86400, stale-while-revalidate=86400",
+    },
+  });
 };
 
 export default function LandingPage() {

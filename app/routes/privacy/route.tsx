@@ -1,8 +1,16 @@
-import type { LinksFunction, MetaFunction } from "react-router";
+import type { HeadersFunction, LinksFunction, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { siteConfig } from "~/config/site";
 import sharedStyles from "../_index/styles.css?url";
 import styles from "./styles.module.css";
+
+export const headers: HeadersFunction = () => {
+  return {
+    "Cache-Control":
+      "public, max-age=600, s-maxage=86400, stale-while-revalidate=86400",
+  };
+};
+
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
