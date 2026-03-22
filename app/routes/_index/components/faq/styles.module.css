@@ -26,7 +26,9 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .item[open] {
@@ -65,7 +67,9 @@
   width: 20px;
   height: 20px;
   color: var(--color-text-lighter);
-  transition: transform var(--transition-slow), color var(--transition-fast);
+  transition:
+    transform var(--transition-slow),
+    color var(--transition-fast);
 }
 
 .item[open] .chevron {

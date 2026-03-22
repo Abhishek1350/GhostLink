@@ -14,7 +14,7 @@ const FAQ_ITEMS = [
   {
     question: "Where are redirects stored?",
     answer:
-      "Every redirect created by GhostLink is a normal Shopify URL redirect. You'll find them in your Shopify admin under Online Store, then Navigation, then URL redirects. You can edit or delete them at any time.",
+      "Every redirect created by GhostLink is a normal Shopify URL redirect. You'll find them in your Shopify admin under Online Store, then Content, then Menus, then URL redirects. You can edit or delete them at any time.",
   },
   {
     question: "Does GhostLink affect SEO?",
@@ -48,8 +48,15 @@ export default function FAQ() {
   return (
     <section id="faq" className={styles.section} aria-labelledby="faq-title">
       <div className={styles.inner}>
-        <span className="section-label" data-aos="fade-up">FAQ</span>
-        <h2 id="faq-title" className={`section-title ${styles.title}`} data-aos="fade-up" data-aos-delay="100">
+        <span className="section-label" data-aos="fade-up">
+          FAQ
+        </span>
+        <h2
+          id="faq-title"
+          className={`section-title ${styles.title}`}
+          data-aos="fade-up"
+          data-aos-delay="100"
+        >
           Frequently asked questions
         </h2>
 

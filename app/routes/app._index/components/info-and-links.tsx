@@ -20,7 +20,7 @@ export function InfoAndLinks({ ...props }: Props) {
         </s-paragraph>
 
         <s-text>
-          <s-link href="/#privacy" target="_blank">
+          <s-link href="/privacy" target="_blank">
             Privacy policy
           </s-link>
           {" · "}

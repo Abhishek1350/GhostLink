@@ -41,10 +41,21 @@ const FEATURES = [
 
 export default function Features() {
   return (
-    <section id="features" className={styles.section} aria-labelledby="features-title">
+    <section
+      id="features"
+      className={styles.section}
+      aria-labelledby="features-title"
+    >
       <div className={styles.inner}>
-        <span className="section-label" data-aos="fade-up">Features</span>
-        <h2 id="features-title" className="section-title" data-aos="fade-up" data-aos-delay="100">
+        <span className="section-label" data-aos="fade-up">
+          Features
+        </span>
+        <h2
+          id="features-title"
+          className="section-title"
+          data-aos="fade-up"
+          data-aos-delay="100"
+        >
           Simple, focused 404 monitoring
         </h2>
         <p className="section-subtitle" data-aos="fade-up" data-aos-delay="150">

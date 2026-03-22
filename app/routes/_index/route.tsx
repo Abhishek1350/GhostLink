@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderFunctionArgs } from "react-router";
+import type { LinksFunction, LoaderFunctionArgs, MetaArgs } from "react-router";
 import { redirect } from "react-router";
 import { Fragment, useEffect } from "react";
 import Navbar from "./components/navbar";
@@ -9,6 +9,10 @@ import FAQ from "./components/faq";
 import Contact from "./components/contact";
 import Footer from "./components/footer";
 import landingStyles from "./styles.css?url";
+import { rootMeta, siteConfig } from "~/config/site";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { GoogleAnalytics } from "./components/google-analytics";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -17,17 +21,42 @@ export const links: LinksFunction = () => [
     href: "https://fonts.gstatic.com",
     crossOrigin: "anonymous",
   },
-  { rel: "preconnect", href: "https://unpkg.com" },
   {
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap",
   },
-  {
-    rel: "stylesheet",
-    href: "https://unpkg.com/aos@2.3.4/dist/aos.css",
-  },
   { rel: "stylesheet", href: landingStyles },
 ];
+
+export function meta({ location }: MetaArgs) {
+  const canonicalUrl = `${siteConfig.url}${location.pathname}`;
+  const ogImage = `${siteConfig.url}${rootMeta.openGraph.image}`;
+
+  return [
+    { title: rootMeta.title },
+    { name: "description", content: rootMeta.description },
+    { name: "keywords", content: rootMeta.keywords },
+    { property: "og:title", content: rootMeta.openGraph.title },
+    { property: "og:description", content: rootMeta.openGraph.description },
+    { property: "og:type", content: rootMeta.openGraph.type },
+    { property: "og:image", content: ogImage },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "author", content: rootMeta.author.name },
+    { tagName: "link", rel: "author", href: rootMeta.author.url },
+    {
+      property: "og:url",
+      content: canonicalUrl.endsWith("/")
+        ? canonicalUrl.slice(0, -1)
+        : canonicalUrl,
+    },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
+    { name: "twitter:card", content: rootMeta.twitter.card },
+    { name: "twitter:title", content: rootMeta.twitter.title },
+    { name: "twitter:description", content: rootMeta.twitter.description },
+    { name: "twitter:image", content: rootMeta.twitter.image },
+  ];
+}
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -37,31 +66,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   return null;
+
+  
 };
 
 export default function LandingPage() {
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/aos@2.3.4/dist/aos.js";
-    script.onload = () => {
-      if (typeof window !== "undefined" && (window as any).AOS) {
-        (window as any).AOS.init({
-          duration: 500,
-          easing: "ease-out-cubic",
-          once: true,
-          offset: 60,
-        });
-      }
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
+    AOS.init({
+      duration: 500,
+      easing: "ease-out-cubic",
+      once: true,
+      offset: 60,
+    });
   }, []);
 
   return (
     <Fragment>
+      <GoogleAnalytics />
       <Navbar />
       <main>
         <Hero />

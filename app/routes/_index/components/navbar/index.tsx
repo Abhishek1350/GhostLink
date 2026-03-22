@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { siteConfig } from "~/config/site";
 import styles from "./styles.module.css";
 
 const NAV_LINKS = [
@@ -15,9 +16,11 @@ export default function Navbar() {
   return (
     <nav className={styles.navbar} aria-label="Main navigation">
       <div className={styles.inner}>
-        <Link to="/" className={styles.logo} aria-label="GhostLink home">
-          <span className={styles.logoIcon} aria-hidden="true">G</span>
-          GhostLink
+        <Link to="/" className={styles.logo} aria-label={`${siteConfig.name} home`}>
+          <span className={styles.logoIcon} aria-hidden="true">
+            {siteConfig.name.charAt(0)}
+          </span>
+          {siteConfig.name}
         </Link>
 
         <button
@@ -62,7 +65,7 @@ export default function Navbar() {
           ))}
           <li>
             <a
-              href="https://apps.shopify.com/ghostlink"
+              href={siteConfig.appStoreUrl}
               className={styles.cta}
               target="_blank"
               rel="noopener noreferrer"

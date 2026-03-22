@@ -81,7 +81,6 @@ body {
   }
 }
 
-/* ── Utility: Section Label (Shiny Pill) ── */
 
 .section-label {
   display: inline-flex;
@@ -97,17 +96,18 @@ body {
   letter-spacing: 0.08em;
   margin-bottom: 1rem;
   border: 1px solid var(--color-primary-muted);
-  background-image: linear-gradient(110deg,
-      transparent 0%,
-      transparent 40%,
-      rgba(79, 70, 229, 0.12) 50%,
-      transparent 60%,
-      transparent 100%);
+  background-image: linear-gradient(
+    110deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(79, 70, 229, 0.12) 50%,
+    transparent 60%,
+    transparent 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
 }
 
-/* ── Utility: Section Title ── */
 
 .section-title {
   font-size: clamp(1.6rem, 3.5vw, 2.25rem);
@@ -117,7 +117,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* ── Utility: Section Subtitle ── */
 
 .section-subtitle {
   font-size: 1.05rem;
@@ -127,7 +126,6 @@ body {
   line-height: 1.6;
 }
 
-/* ── Utility: Primary Button ── */
 
 .btn-primary {
   display: inline-flex;
@@ -144,7 +142,10 @@ body {
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
   cursor: pointer;
-  transition: background var(--transition-base), transform var(--transition-fast), box-shadow var(--transition-base);
+  transition:
+    background var(--transition-base),
+    transform var(--transition-fast),
+    box-shadow var(--transition-base);
   box-shadow: var(--shadow-md);
 }
 
@@ -154,7 +155,6 @@ body {
   box-shadow: 0 4px 16px var(--color-primary-shadow-hover);
 }
 
-/* ── Utility: Secondary Button ── */
 
 .btn-secondary {
   display: inline-flex;
@@ -171,7 +171,10 @@ body {
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
   cursor: pointer;
-  transition: border-color var(--transition-base), color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .btn-secondary:hover {
@@ -180,7 +183,6 @@ body {
   box-shadow: 0 2px 8px var(--color-primary-focus);
 }
 
-/* ── Utility: Form Inputs ── */
 
 .input-field {
   padding: 0.7rem 0.85rem;
@@ -190,7 +192,9 @@ body {
   font-family: inherit;
   color: var(--color-text);
   background: var(--color-surface);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
   outline: none;
   width: 100%;
 }
@@ -200,7 +204,6 @@ body {
   box-shadow: var(--shadow-focus);
 }
 
-/* ── Utility: Responsive ── */
 
 @media (max-width: 768px) {
   .btn-primary,

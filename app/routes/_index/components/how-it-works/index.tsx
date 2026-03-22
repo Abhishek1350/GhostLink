@@ -33,10 +33,21 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className={styles.section} aria-labelledby="hiw-title">
+    <section
+      id="how-it-works"
+      className={styles.section}
+      aria-labelledby="hiw-title"
+    >
       <div className={styles.inner}>
-        <span className="section-label" data-aos="fade-up">How it works</span>
-        <h2 id="hiw-title" className={`section-title ${styles.title}`} data-aos="fade-up" data-aos-delay="100">
+        <span className="section-label" data-aos="fade-up">
+          How it works
+        </span>
+        <h2
+          id="hiw-title"
+          className={`section-title ${styles.title}`}
+          data-aos="fade-up"
+          data-aos-delay="100"
+        >
           From broken link to redirect in seconds
         </h2>
 

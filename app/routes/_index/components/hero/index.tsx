@@ -1,3 +1,4 @@
+import { siteConfig } from "~/config/site";
 import styles from "./styles.module.css";
 
 const VALUE_PROPS = [
@@ -23,7 +24,11 @@ export default function Hero() {
     <header className={styles.hero}>
       <div className={styles.heroGlow} aria-hidden="true" />
       <div className={styles.inner}>
-        <span className="section-label" data-aos="fade-down" data-aos-delay="100">
+        <span
+          className="section-label"
+          data-aos="fade-down"
+          data-aos-delay="100"
+        >
           Free Shopify App
         </span>
 
@@ -34,21 +39,24 @@ export default function Hero() {
 
         <p className={styles.subtitle} data-aos="fade-up" data-aos-delay="250">
           Every broken link sends a customer to a dead end. 404 pages hurt your
-          SEO, break trust, and quietly reduce conversions. GhostLink helps you
-          spot every 404 and turn dead links into clean redirects, without
-          touching your theme code.
+          SEO, break trust, and quietly reduce conversions. {siteConfig.name}{" "}
+          helps you spot every 404 and turn dead links into clean redirects,
+          without touching your theme code.
         </p>
 
         <div className={styles.actions} data-aos="fade-up" data-aos-delay="350">
           <a
-            href="https://apps.shopify.com/ghostlink"
+            href={siteConfig.appStoreUrl}
             className={`btn-primary ${styles.primaryBtn}`}
             target="_blank"
             rel="noopener noreferrer"
           >
             Install on Shopify
           </a>
-          <a href="#how-it-works" className={`btn-secondary ${styles.secondaryBtn}`}>
+          <a
+            href="#how-it-works"
+            className={`btn-secondary ${styles.secondaryBtn}`}
+          >
             See how it works
           </a>
         </div>

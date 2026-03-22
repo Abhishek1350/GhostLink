@@ -24,7 +24,10 @@
   border-radius: var(--radius-2xl);
   padding: 2rem 1.5rem;
   text-align: left;
-  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
 }
 
 .card:hover {
