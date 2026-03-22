@@ -8,8 +8,8 @@ export const siteBasic = {
 
 export const siteConfig = {
     ...siteBasic,
-    url: process.env.SHOPIFY_APP_URL,
-    email: process.env.CONTACT_EMAIL,
+    url: import.meta.env.VITE_APP_URL,
+    email: import.meta.env.VITE_CONTACT_EMAIL,
     logo: "/logo.webp",
     author: {
         name: "Abhishek Bhardwaj",
