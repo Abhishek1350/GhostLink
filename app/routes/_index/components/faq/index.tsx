@@ -65,6 +65,7 @@ export default function FAQ() {
             <details
               className={styles.item}
               key={i}
+              role="listitem"
               data-aos="fade-up"
               data-aos-delay={150 + i * 60}
             >

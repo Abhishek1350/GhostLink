@@ -56,13 +56,18 @@
 
 .link {
   color: var(--color-footer-text);
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(209, 213, 219, 0.3);
+  transition:
+    color var(--transition-fast),
+    text-decoration-color var(--transition-fast);
   font-size: 0.8rem;
-  transition: color var(--transition-fast);
 }
 
 .link:hover {
   color: var(--color-footer-text-bright);
+  text-decoration-color: var(--color-footer-text-bright);
 }
 
 @media (max-width: 768px) {

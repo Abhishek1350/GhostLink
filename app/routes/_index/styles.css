@@ -24,8 +24,8 @@
   --color-border-input: #d1d5db;
 
   --color-footer-bg: #111827;
-  --color-footer-text: #9ca3af;
-  --color-footer-text-light: #6b7280;
+  --color-footer-text: #d1d5db;
+  --color-footer-text-light: #9ca3af;
   --color-footer-text-bright: #f9fafb;
 
   --font-family: "DM Sans", "Inter", system-ui, -apple-system, sans-serif;
@@ -81,7 +81,6 @@ body {
   }
 }
 
-
 .section-label {
   display: inline-flex;
   align-items: center;
@@ -108,7 +107,6 @@ body {
   animation: shimmer 3s ease-in-out infinite;
 }
 
-
 .section-title {
   font-size: clamp(1.6rem, 3.5vw, 2.25rem);
   font-weight: var(--font-weight-extrabold);
@@ -117,7 +115,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-
 .section-subtitle {
   font-size: 1.05rem;
   color: var(--color-text-light);
@@ -125,7 +122,6 @@ body {
   margin: 0 auto 3rem;
   line-height: 1.6;
 }
-
 
 .btn-primary {
   display: inline-flex;
@@ -155,7 +151,6 @@ body {
   box-shadow: 0 4px 16px var(--color-primary-shadow-hover);
 }
 
-
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -183,7 +178,6 @@ body {
   box-shadow: 0 2px 8px var(--color-primary-focus);
 }
 
-
 .input-field {
   padding: 0.7rem 0.85rem;
   border: 1.5px solid var(--color-border-input);
@@ -203,7 +197,6 @@ body {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
 }
-
 
 @media (max-width: 768px) {
   .btn-primary,
