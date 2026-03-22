@@ -43,17 +43,22 @@ export default function Features() {
   return (
     <section id="features" className={styles.section} aria-labelledby="features-title">
       <div className={styles.inner}>
-        <p className={styles.sectionLabel} aria-hidden="true">Features</p>
-        <h2 id="features-title" className={styles.title}>
+        <span className={styles.sectionLabel} data-aos="fade-up">Features</span>
+        <h2 id="features-title" className={styles.title} data-aos="fade-up" data-aos-delay="100">
           Simple, focused 404 monitoring
         </h2>
-        <p className={styles.subtitle}>
+        <p className={styles.subtitle} data-aos="fade-up" data-aos-delay="150">
           Everything you need to find and fix broken links. Nothing you don't.
         </p>
 
         <ul className={styles.grid} role="list">
-          {FEATURES.map((feature) => (
-            <li className={styles.card} key={feature.title}>
+          {FEATURES.map((feature, i) => (
+            <li
+              className={styles.card}
+              key={feature.title}
+              data-aos="fade-up"
+              data-aos-delay={200 + i * 80}
+            >
               <div className={styles.cardIcon} aria-hidden="true">
                 {feature.icon}
               </div>

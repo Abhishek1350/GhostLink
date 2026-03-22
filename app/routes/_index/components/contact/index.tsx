@@ -4,11 +4,11 @@ export default function Contact() {
   return (
     <section id="contact" className={styles.section} aria-labelledby="contact-title">
       <div className={styles.inner}>
-        <p className={styles.sectionLabel} aria-hidden="true">Contact</p>
-        <h2 id="contact-title" className={styles.title}>
+        <span className={styles.sectionLabel} data-aos="fade-up">Contact</span>
+        <h2 id="contact-title" className={styles.title} data-aos="fade-up" data-aos-delay="100">
           Get in touch
         </h2>
-        <p className={styles.subtitle}>
+        <p className={styles.subtitle} data-aos="fade-up" data-aos-delay="150">
           Have questions, feedback, or need help getting set up? Drop us a
           message and we'll get back to you as soon as we can.
         </p>
@@ -18,6 +18,8 @@ export default function Contact() {
           action="https://formsubmit.co/support@imabhishek.site"
           method="POST"
           aria-label="Contact form"
+          data-aos="fade-up"
+          data-aos-delay="200"
         >
           <input type="hidden" name="_captcha" value="false" />
           <input type="hidden" name="_subject" value="GhostLink Contact Form" />
@@ -71,7 +73,7 @@ export default function Contact() {
           </button>
         </form>
 
-        <div className={styles.contactCards}>
+        <div className={styles.contactCards} data-aos="fade-up" data-aos-delay="300">
           <a
             href="mailto:support@imabhishek.site"
             className={styles.contactCard}

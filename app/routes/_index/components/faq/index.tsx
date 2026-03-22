@@ -48,14 +48,19 @@ export default function FAQ() {
   return (
     <section id="faq" className={styles.section} aria-labelledby="faq-title">
       <div className={styles.inner}>
-        <p className={styles.sectionLabel} aria-hidden="true">FAQ</p>
-        <h2 id="faq-title" className={styles.title}>
+        <span className={styles.sectionLabel} data-aos="fade-up">FAQ</span>
+        <h2 id="faq-title" className={styles.title} data-aos="fade-up" data-aos-delay="100">
           Frequently asked questions
         </h2>
 
         <div className={styles.list} role="list">
           {FAQ_ITEMS.map((item, i) => (
-            <details className={styles.item} key={i}>
+            <details
+              className={styles.item}
+              key={i}
+              data-aos="fade-up"
+              data-aos-delay={150 + i * 60}
+            >
               <summary className={styles.question}>
                 {item.question}
                 <ChevronIcon />

@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import styles from "./styles.module.css";
 
 const VALUE_PROPS = [
@@ -24,21 +23,23 @@ export default function Hero() {
     <header className={styles.hero}>
       <div className={styles.heroGlow} aria-hidden="true" />
       <div className={styles.inner}>
-        <span className={styles.badge}>Free Shopify App</span>
+        <span className={styles.badge} data-aos="fade-down" data-aos-delay="100">
+          Free Shopify App
+        </span>
 
-        <h1 className={styles.title}>
+        <h1 className={styles.title} data-aos="fade-up" data-aos-delay="150">
           Fix broken links on Shopify{" "}
           <span className={styles.highlight}>before they cost you sales</span>
         </h1>
 
-        <p className={styles.subtitle}>
+        <p className={styles.subtitle} data-aos="fade-up" data-aos-delay="250">
           Every broken link sends a customer to a dead end. 404 pages hurt your
           SEO, break trust, and quietly reduce conversions. GhostLink helps you
           spot every 404 and turn dead links into clean redirects, without
           touching your theme code.
         </p>
 
-        <div className={styles.actions}>
+        <div className={styles.actions} data-aos="fade-up" data-aos-delay="350">
           <a
             href="https://apps.shopify.com/ghostlink"
             className={styles.primaryBtn}
@@ -47,14 +48,20 @@ export default function Hero() {
           >
             Install on Shopify
           </a>
-          <Link to="#how-it-works" className={styles.secondaryBtn}>
+          <a href="#how-it-works" className={styles.secondaryBtn}>
             See how it works
-          </Link>
+          </a>
         </div>
 
         <div className={styles.valueProps} role="list">
           {VALUE_PROPS.map((prop, i) => (
-            <div className={styles.valueProp} key={i} role="listitem">
+            <div
+              className={styles.valueProp}
+              key={i}
+              role="listitem"
+              data-aos="fade-up"
+              data-aos-delay={400 + i * 100}
+            >
               <span className={styles.valuePropIcon} aria-hidden="true">
                 {prop.icon}
               </span>
