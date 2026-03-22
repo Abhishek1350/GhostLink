@@ -47,13 +47,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const path = formData.get("path") as string;
         const target = (formData.get("target") as string) ?? "/";
 
-        const redirect = await createRedirect(admin, { path, target });
-        
-        if (redirect.error) {
-            return data({ error: redirect.error }, { status: 400 });
-        }
-
-        updateLogStatus(Number(id), LinkStatus.FIXED);
+        await createRedirect(admin, { path, target });
+        await updateLogStatus(Number(id), LinkStatus.FIXED);
 
         return data({ success: true });
     }

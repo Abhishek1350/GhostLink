@@ -117,11 +117,8 @@ async function handleAutoPilotFix({
       target: autoTarget || "/",
     });
 
-    if (createStatus?.success && log?.status === LinkStatus.PENDING) {
-      await updateLogStatus(log.id, LinkStatus.FIXED);
-      console.log(
-        `GhostLink: Auto-Pilot fixed ${pathKey} -> ${autoTarget ?? "/"}`,
-      );
+    if (createStatus?.success && log) {
+      updateLogStatus(log.id, LinkStatus.FIXED);
     }
   } catch (error) {
     if (error instanceof GraphqlQueryError) {
