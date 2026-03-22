@@ -1,0 +1,103 @@
+.section {
+  padding: var(--section-padding);
+  background: var(--color-bg);
+}
+
+.inner {
+  max-width: var(--container-narrow);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  font-size: clamp(1.6rem, 3.5vw, 2.25rem);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text);
+  margin: 0 0 3rem;
+  letter-spacing: -0.02em;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.item[open] {
+  border-color: var(--color-primary-muted);
+  box-shadow: 0 2px 12px var(--color-primary-glow);
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.25rem;
+  cursor: pointer;
+  font-size: 0.975rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  list-style: none;
+  user-select: none;
+  transition: color var(--transition-fast);
+}
+
+.question::-webkit-details-marker {
+  display: none;
+}
+
+.question::marker {
+  content: "";
+}
+
+.question:hover {
+  color: var(--color-primary);
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-lighter);
+  transition: transform var(--transition-slow), color var(--transition-fast);
+}
+
+.item[open] .chevron {
+  transform: rotate(180deg);
+  color: var(--color-primary);
+}
+
+.answer {
+  padding: 0 1.25rem 1.25rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin: 0;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: var(--section-padding-mobile);
+  }
+}
