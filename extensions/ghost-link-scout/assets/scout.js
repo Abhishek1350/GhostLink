@@ -8,7 +8,7 @@
   };
 
   onDomReady(() => {
-    console.log("GhostLink Scout initialized");
+    console.log("Scout initialized");
 
     const root = document.getElementById("ghostlink-scout-root");
     if (!root) {
@@ -50,7 +50,7 @@
           "Content-Type": "application/json"
         }
       }).catch((error) => {
-        console.error("GhostLink Scout: Failed to log 404 via fetch", error);
+        console.error("Scout: Failed to log 404 via fetch", error);
       });
     };
 
@@ -65,7 +65,7 @@
           sendWithFetch();
         }
       } catch (error) {
-        console.warn("GhostLink Scout: sendBeacon failed, falling back to fetch", error);
+        console.warn("Scout: sendBeacon failed, falling back to fetch", error);
         sendWithFetch();
       }
     } else {

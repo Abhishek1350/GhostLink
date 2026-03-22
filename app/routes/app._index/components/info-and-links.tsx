@@ -1,3 +1,5 @@
+import { siteConfig } from "~/config/site";
+
 type Props = JSX.IntrinsicElements["s-section"];
 
 export function InfoAndLinks({ ...props }: Props) {
@@ -9,7 +11,7 @@ export function InfoAndLinks({ ...props }: Props) {
     <s-section {...props}>
       <s-stack direction="block" gap="small">
         <s-paragraph>
-          GhostLink watches your 404 pages and creates standard{" "}
+          {siteConfig.name} watches your 404 pages and creates standard{" "}
           <s-link onClick={handleOpenRedirects}>Shopify URL redirects</s-link>{" "}
           when you fix them or enable Auto‑Pilot.{" "}
           <s-link href="/" target="_blank">

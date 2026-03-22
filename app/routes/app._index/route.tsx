@@ -8,6 +8,7 @@ import { getSettings, saveSettings } from "~/lib/settings.server";
 import { AppOutletContext } from "~/routes/app";
 import { LinkStatus } from "@prisma/client";
 import { createRedirect } from "~/lib/url-redirect.server";
+import { siteBasic } from "~/config/site";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { session } = await shopify.authenticate.admin(request);
@@ -62,8 +63,8 @@ export default function Index() {
     const { extensionStatus } = useOutletContext<AppOutletContext>();
 
     return (
-        <s-page heading="GhostLink Dashboard">
-            <ui-title-bar title="GhostLink Dashboard" />
+        <s-page heading={`${siteBasic.name} Dashboard`}>
+            <ui-title-bar title={`${siteBasic.name} Dashboard`} />
             {extensionStatus === "active" ? (
                 <Fragment>
                     <s-section heading="Detected Broken Links">
