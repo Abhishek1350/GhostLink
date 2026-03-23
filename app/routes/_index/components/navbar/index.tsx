@@ -16,10 +16,19 @@ export default function Navbar() {
   return (
     <nav className={styles.navbar} aria-label="Main navigation">
       <div className={styles.inner}>
-        <Link to="/" className={styles.logo} aria-label={`${siteConfig.name} home`}>
-          <span className={styles.logoIcon} aria-hidden="true">
-            {siteConfig.name.charAt(0)}
-          </span>
+        <Link
+          to="/"
+          className={styles.logo}
+          aria-label={`${siteConfig.name} home`}
+        >
+          <img
+            src={siteConfig.logo}
+            alt={siteConfig.name}
+            className={styles.logoIcon}
+            aria-hidden="true"
+            width={35}
+            height={35}
+          />
           {siteConfig.name}
         </Link>
 
@@ -40,9 +49,17 @@ export default function Navbar() {
             aria-hidden="true"
           >
             {menuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             )}
           </svg>
         </button>

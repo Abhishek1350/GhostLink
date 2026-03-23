@@ -14,29 +14,24 @@
   gap: 1rem;
 }
 
-.brand {
+.logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  text-decoration: none;
+  color: var(--color-footer-text-bright);
+  font-weight: var(--font-weight-bold);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
 }
 
 .logoIcon {
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, var(--color-primary), #6366f1);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: var(--font-weight-extrabold);
-  font-size: 0.75rem;
-}
-
-.brandName {
-  font-weight: var(--font-weight-bold);
-  font-size: 1rem;
-  color: var(--color-footer-text-bright);
 }
 
 .copyright {

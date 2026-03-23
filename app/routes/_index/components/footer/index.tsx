@@ -8,12 +8,21 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
-        <div className={styles.brand}>
-          <span className={styles.logoIcon} aria-hidden="true">
-            {siteConfig.name.charAt(0)}
-          </span>
-          <span className={styles.brandName}>{siteConfig.name}</span>
-        </div>
+        <Link
+          to="/"
+          className={styles.logo}
+          aria-label={`${siteConfig.name} home`}
+        >
+          <img
+            src={siteConfig.logo}
+            alt={siteConfig.name}
+            className={styles.logoIcon}
+            aria-hidden="true"
+            width={35}
+            height={35}
+          />
+          {siteConfig.name}
+        </Link>
 
         <p className={styles.copyright}>
           © {year} {siteConfig.name}. Built by{" "}
