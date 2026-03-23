@@ -27,3 +27,5 @@ database.sqlite
 .react-router/
 
 plan.md
+
+.vercel

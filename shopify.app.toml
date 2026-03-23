@@ -2,14 +2,14 @@
 
 client_id = "186c7789e29525cbb4702bcf81e68aef"
 name = "GhostLink"
-application_url = "https://example.com"
+application_url = "https://ghostlink.imabhishek.site"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://ghostlink.imabhishek.site/api/auth" ]
 
 [webhooks]
 api_version = "2026-04"
