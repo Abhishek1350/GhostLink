@@ -18,7 +18,7 @@ export async function shouldProcess(
   type: ThrottleType,
 ): Promise<boolean> {
   try {
-    const ttl = type === "log" ? 1 : 60;
+    const ttl = type === "log" ? 2 : 60;
     const key = `ghostlink:404:${type}:${shop}:${path}`;
 
     const result = await redis.set(key, "1", { nx: true, ex: ttl });

@@ -130,21 +130,23 @@ export async function action({ request }: any) {
   }
 
   // Schedule background work using waitUntil
-  waitUntil(
-    (async () => {
-      try {
-        if (await shouldProcess(shop, pathKey, "log")) {
-          await logHitJob({ shop, pathKey, fullUrl, referrer });
-        }
-
-        if (await shouldProcess(shop, pathKey, "fix")) {
-          await handleAutoPilotJob({ shop, pathKey });
-        }
-      } catch (error) {
-        console.error("GhostLink: Error in background 404 processing:", error);
+  const backgroundWork = (async () => {
+    try {
+      if (await shouldProcess(shop, pathKey, "log")) {
+        await logHitJob({ shop, pathKey, fullUrl, referrer });
       }
-    })(),
-  );
+
+      if (await shouldProcess(shop, pathKey, "fix")) {
+        await handleAutoPilotJob({ shop, pathKey });
+      }
+    } catch (error) {
+      console.error("GhostLink: Error in background 404 processing:", error);
+    }
+  })();
+
+  try {
+    waitUntil(backgroundWork);
+  } catch (e) { }
 
   return data({ success: true }, { status: 200 });
 }
