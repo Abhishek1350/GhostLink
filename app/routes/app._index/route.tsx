@@ -76,8 +76,7 @@ export default function Index() {
                                 <s-stack direction="block" gap="small">
                                     <s-paragraph>
                                         No broken links detected yet. Please give us some time to
-                                        scan your site. In the meantime, you can enable autopilot
-                                        and let us do the work!
+                                        scan your site. In the meantime, you can enable Auto‑Pilot and let GhostLink automatically create redirects for new 404s.
                                     </s-paragraph>
                                 </s-stack>
                             </s-box>

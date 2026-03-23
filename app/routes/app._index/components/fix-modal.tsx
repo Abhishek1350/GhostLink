@@ -2,6 +2,7 @@ import { GhostLinkLog } from "@prisma/client";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
+import { validateRedirectTarget } from "~/lib/utils";
 
 export const FIX_MODAL = "fix-modal";
 
@@ -16,12 +17,13 @@ export function FixModal({ link, onClose, ...props }: Props) {
     const loading = fetcher.state !== "idle";
 
     const [target, setTarget] = useState(link?.url || "/");
+    const [targetError, setTargetError] = useState<string | undefined>();
 
-    const modalRef = useRef<HTMLElementTagNameMap["s-modal"]  | null>(null);
+    const modalRef = useRef<HTMLElementTagNameMap["s-modal"] | null>(null);
 
     useEffect(() => {
         if (fetcher.data?.success) {
-            appBridge.toast.show("Fixed successfully")
+            appBridge.toast.show("Fixed successfully");
             modalRef.current?.toggleOverlay();
             modalRef.current?.hideOverlay();
             onClose();
@@ -31,6 +33,13 @@ export function FixModal({ link, onClose, ...props }: Props) {
     }, [fetcher.data, appBridge]);
 
     function handleSave() {
+        const { valid, error } = validateRedirectTarget(target);
+        if (!valid) {
+            setTargetError(error);
+            return;
+        }
+        setTargetError(undefined);
+
         fetcher.submit(
             {
                 intent: "fixLink",
@@ -51,12 +60,16 @@ export function FixModal({ link, onClose, ...props }: Props) {
         >
             <s-stack direction="block" gap="base">
                 <s-text-field
-                    label="Target"
+                    label="Target Path"
                     name="target"
                     value={target}
-                    onChange={(e) => setTarget(e.currentTarget.value)}
+                    onInput={(e) => {
+                        setTarget(e.currentTarget.value);
+                        if (targetError) setTargetError(undefined);
+                    }}
                     required
-                    details="The new destination URL or path (e.g., /pages/new-page)"
+                    details="The new URL that visitors should be forwarded to. If you want to redirect to your store's homepage, enter / (a forward slash)"
+                    error={targetError}
                 />
             </s-stack>
             <s-button
@@ -64,8 +77,9 @@ export function FixModal({ link, onClose, ...props }: Props) {
                 variant="primary"
                 loading={loading}
                 onClick={handleSave}
+                disabled={!target}
             >
-                Submit
+                Create redirect
             </s-button>
             <s-button
                 slot="secondary-actions"

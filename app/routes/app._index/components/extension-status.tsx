@@ -28,7 +28,12 @@ export function ExtensionStatus({ status, ...props }: Props) {
     function renderContent() {
         switch (status) {
             case "loading":
-                return <s-spinner accessibilityLabel="Loading" size="large-100" />;
+                return (
+                    <s-stack alignItems="center" gap="base" padding="large">
+                        <s-spinner accessibilityLabel="Loading" size="large-100"></s-spinner>
+                        <s-text>Checking Extension Status...</s-text>
+                    </s-stack>
+                )
 
             case "inactive":
                 return (
@@ -59,7 +64,7 @@ export function ExtensionStatus({ status, ...props }: Props) {
         }
     }
 
-    if(status === "active") return null;
+    if (status === "active") return null;
 
     return (
         <s-section {...props}>

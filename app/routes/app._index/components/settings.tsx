@@ -2,6 +2,7 @@ import { GhostLinkSettings } from "@prisma/client";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
+import { validateRedirectTarget } from "~/lib/utils";
 
 type Props = JSX.IntrinsicElements["s-section"] & {
     settings: GhostLinkSettings | null;
@@ -10,6 +11,7 @@ type Props = JSX.IntrinsicElements["s-section"] & {
 export function Settings({ settings, ...props }: Props) {
     const [autoPilot, setAutoPilot] = useState(settings?.autoPilot || false);
     const [autoTarget, setAutoTarget] = useState(settings?.autoTarget || "/");
+    const [targetError, setTargetError] = useState<string | undefined>();
 
     const fetcher = useFetcher();
     const appBridge = useAppBridge();
@@ -23,6 +25,13 @@ export function Settings({ settings, ...props }: Props) {
     }, [fetcher.data, appBridge]);
 
     function handleSaveSettings() {
+        const { valid, error } = validateRedirectTarget(autoTarget);
+        if (!valid) {
+            setTargetError(error);
+            return;
+        }
+        setTargetError(undefined);
+
         fetcher.submit(
             {
                 intent: "saveSettings",
@@ -40,13 +49,19 @@ export function Settings({ settings, ...props }: Props) {
                     label="Auto-Pilot"
                     details="Automatically fix new 404s"
                     checked={autoPilot}
-                    onChange={(e: any) => setAutoPilot(e.target.checked)}
+                    onChange={(e) => setAutoPilot(e.currentTarget.checked)}
                 />
                 <s-text-field
                     label="Target Path"
-                    details="Where to redirect 404s to"
+                    details="The new URL that visitors should be forwarded to. If you want to redirect to your store's homepage, enter / (a forward slash)."
                     value={autoTarget}
-                    onChange={(e: any) => setAutoTarget(e.target.value)}
+                    onInput={(e) => {
+                        setAutoTarget(e.currentTarget.value)
+                        if(targetError) setTargetError(undefined);
+                        console.log("fjsdlfjk")
+                    }}
+                    error={targetError}
+                    disabled={!autoPilot}
                 />
 
                 <s-button
