@@ -5,7 +5,7 @@ const FEATURES = [
     icon: "📡",
     title: "Automatic 404 logging",
     description:
-      "Tracks every visit to your 404 page. Stores the broken path, full URL, referrer, and hit count so you know which links need attention.",
+      "Tracks visits to 404 pages with ultra-low latency. Powered by Redis-based smart jobs to deduplicate hits and maintain lightning-fast performance.",
   },
   {
     icon: "⚡",
