@@ -1,5 +1,10 @@
-import type { LinksFunction, LoaderFunctionArgs, MetaArgs } from "react-router";
-import { redirect } from "react-router";
+import type {
+  ActionFunctionArgs,
+  LinksFunction,
+  LoaderFunctionArgs,
+  MetaArgs,
+} from "react-router";
+import { data, redirect } from "react-router";
 import { Fragment, useEffect } from "react";
 import Navbar from "./components/navbar";
 import Hero from "./components/hero";
@@ -13,6 +18,7 @@ import { rootMeta, siteConfig } from "~/config/site";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { GoogleAnalytics } from "./components/google-analytics";
+import { sendMail } from "~/lib/mailer.server";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -75,6 +81,34 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         "public, max-age=600, s-maxage=86400, stale-while-revalidate=86400",
     },
   });
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const message = formData.get("message") as string;
+
+  if (!name || !email || !message) {
+    return data({ error: "All fields are required" });
+  }
+
+  if (name.length > 100 || message.length > 1000) {
+    return data({
+      error: "Name max 100 characters, message max 1000 characters",
+    });
+  }
+
+  try {
+    const sent = await sendMail({ name, email, message });
+
+    if (sent) {
+      return data({ success: "Message sent successfully" });
+    }
+    return data({ error: "Something went wrong" });
+  } catch (error) {
+    return data({ error: "Something went wrong" });
+  }
 };
 
 export default function LandingPage() {

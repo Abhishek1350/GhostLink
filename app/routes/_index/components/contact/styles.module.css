@@ -48,6 +48,18 @@
   align-self: flex-start;
 }
 
+.error, .success {
+  text-align: center;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
+}
+
 .contactCards {
   display: grid;
   grid-template-columns: 1fr 1fr;
