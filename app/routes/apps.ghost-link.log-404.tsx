@@ -48,7 +48,6 @@ const ASSET_EXTENSIONS = [
 
 function normalizeUrlForRedirect(rawUrl: string) {
   let pathKey = rawUrl;
-  let fullUrl = rawUrl;
 
   try {
     const parsed = new URL(rawUrl, "https://dummy.invalid");
@@ -65,14 +64,12 @@ function normalizeUrlForRedirect(rawUrl: string) {
     }
 
     const cleanedSearch = params.toString();
-    fullUrl = cleanedSearch ? `${pathname}?${cleanedSearch}` : pathname;
   } catch {
     // Fallback to the raw string as path (best effort)
     pathKey = rawUrl;
-    fullUrl = rawUrl;
   }
 
-  return { pathKey, fullUrl };
+  return pathKey;
 }
 
 async function getShopFromAppProxy(request: Request) {
@@ -122,8 +119,8 @@ export async function action({ request }: any) {
   const validated = validateBody(body);
   if (validated instanceof Response) return validated;
 
-  const { url, referrer } = validated;
-  const { pathKey, fullUrl } = normalizeUrlForRedirect(url);
+  const { url: fullUrl, referrer } = validated;
+  const pathKey = normalizeUrlForRedirect(fullUrl);
 
   if (isBotOrAsset(pathKey)) {
     return data({ success: true, filtered: true }, { status: 200 });

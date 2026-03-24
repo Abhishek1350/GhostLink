@@ -58,3 +58,17 @@ export function validateRedirectTarget(rawValue: string): ValidationResult {
         };
     }
 }
+
+
+export function formatDateTime(value: Date | string | null | undefined) {
+  if (!value) return "—";
+
+  const date = typeof value === "string" ? new Date(value) : value;
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
