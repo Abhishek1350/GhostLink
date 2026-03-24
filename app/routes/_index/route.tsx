@@ -36,7 +36,6 @@ export const links: LinksFunction = () => [
 
 export function meta({ location }: MetaArgs) {
   const canonicalUrl = `${siteConfig.url}${location.pathname}`;
-  const ogImage = `${siteConfig.url}${rootMeta.openGraph.image}`;
 
   return [
     { title: rootMeta.title },
@@ -45,9 +44,6 @@ export function meta({ location }: MetaArgs) {
     { property: "og:title", content: rootMeta.openGraph.title },
     { property: "og:description", content: rootMeta.openGraph.description },
     { property: "og:type", content: rootMeta.openGraph.type },
-    { property: "og:image", content: ogImage },
-    { property: "og:image:width", content: "1200" },
-    { property: "og:image:height", content: "630" },
     { property: "author", content: rootMeta.author.name },
     { tagName: "link", rel: "author", href: rootMeta.author.url },
     {
