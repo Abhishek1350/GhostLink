@@ -18,6 +18,7 @@ export async function shouldProcess(
   type: ThrottleType,
 ): Promise<boolean> {
   try {
+    if(process.env.NODE_ENV === "development") return true;
     const ttl = type === "log" ? 2 : 60;
     const key = `ghostlink:404:${type}:${shop}:${path}`;
 
